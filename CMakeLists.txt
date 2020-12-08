@@ -41,6 +41,8 @@ root_generate_dictionary(
     ${PROJECT_SOURCE_DIR}/include/GloryDuckTables2019Lkl.h
     ${PROJECT_SOURCE_DIR}/include/TemplateLkl.h 
     ${PROJECT_SOURCE_DIR}/include/HdNdE.h 
+    ${PROJECT_SOURCE_DIR}/include/IactUnbinnedLivLkl.h
+    ${PROJECT_SOURCE_DIR}/include/IactBinnedLivLkl.h
     LINKDEF ${PROJECT_SOURCE_DIR}/include/gLikeLinkDef.h
 )
 # create a shared library with the generated dictionary
@@ -57,6 +59,8 @@ add_library(
     ${PROJECT_SOURCE_DIR}/src/GloryDuckTables2019Lkl.cc
     ${PROJECT_SOURCE_DIR}/src/TemplateLkl.cc 
     ${PROJECT_SOURCE_DIR}/src/HdNdE.cc 
+    ${PROJECT_SOURCE_DIR}/src/IactUnbinnedLivLkl.cc
+    ${PROJECT_SOURCE_DIR}/src/IactBinnedLivLkl.cc
     gLikeDict
 )
 # make gLike headers public, for usage by other codes
