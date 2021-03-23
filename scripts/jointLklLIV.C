@@ -83,17 +83,16 @@
 #include "FermiTables2016Lkl.h"
 #include "GloryDuckTables2019Lkl.h"
 #include "JointLkl.h"
+#include "IactUnbinnedLivLkl.h"
+#include "IactBinnedLivLkl.h"
 
 using namespace std;
 
 void setDefaultStyle();
-void decode_channel(TObjArray* coefficients, Int_t &nChannels, TString *channelval, Double_t *brval);
-void compute_branonBR(Float_t &mass, Int_t &nChannels, TString *channelval, Double_t *brval, Double_t &translation_factor);
-Int_t GetNSkippedMasses(Int_t nm,const Double_t* vm,Double_t minm);
 
 const Int_t nMaxLkls = 1000;
 
-void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t seed=-1)
+void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t seed=-1)
 {
   setDefaultStyle();
 
@@ -107,7 +106,7 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
   cout << endl;
   cout << "***********************************************************************************" << endl;
   cout << "***********************************************************************************" << endl;
-  cout << "***                            RUNNING jointLklDM.C                             ***" << endl;
+  cout << "***                            RUNNING jointLklLIV.C                            ***" << endl;
   cout << "***********************************************************************************" << endl;
   cout << "***********************************************************************************" << endl;
   cout << "***" << endl;
@@ -120,56 +119,51 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
 
   // Read configuration file
   TEnv*  env = new TEnv(configFileName);
-  TString  label             = env->GetValue("jointLklDM.Label","");
-  TString  channel           = env->GetValue("jointLklDM.Channel","bb");
-  TString  process           = env->GetValue("jointLklDM.Process","ann");
-  Bool_t   isGpositive       = env->GetValue("jointLklDM.isGpositive",kFALSE);
-  Bool_t   showSamplePlots   = env->GetValue("jointLklDM.showSamplePlots",kTRUE);
-  Bool_t   showParabolaPlots = env->GetValue("jointLklDM.showParabolaPlots",kTRUE);
-  Bool_t   showLimitPlots    = env->GetValue("jointLklDM.showLimitPlots",kTRUE);
-  Double_t plotmin           = env->GetValue("jointLklDM.plotmin",0.);
-  Double_t plotmax           = env->GetValue("jointLklDM.plotmax",0.);
-  Double_t plotScale         = env->GetValue("jointLklDM.plotScale",1.);
-  Double_t deltaLogLkl       = env->GetValue("jointLklDM.deltaLogLkl",2.71);
-  TString  fInputDataPath    = env->GetValue("jointLklDM.path","");
-  TString  fdNdEDir          = fInputDataPath+"/"+env->GetValue("jointLklDM.dNdEDir","")+"/";
-  TString  fPlotsDir         = fInputDataPath+"/"+env->GetValue("jointLklDM.plotsDir","")+"/";
-  TString  provval           = env->GetValue("jointLklDM.dNdEpSignalDir","-");
+  TString  label             = env->GetValue("jointLklLIV.Label","");
+  TString  framework         = env->GetValue("jointLklLIV.Framework","LIV");
+  TString  order             = env->GetValue("jointLklLIV.Order","linear");
+  TString  scenario          = env->GetValue("jointLklLIV.Scenario","sup");
+  Bool_t   isGpositive       = env->GetValue("jointLklLIV.isGpositive",kFALSE);
+  Bool_t   showSamplePlots   = env->GetValue("jointLklLIV.showSamplePlots",kTRUE);
+  Bool_t   showParabolaPlots = env->GetValue("jointLklLIV.showParabolaPlots",kTRUE);
+  Bool_t   showLimitPlots    = env->GetValue("jointLklLIV.showLimitPlots",kTRUE);
+  Double_t plotmin           = env->GetValue("jointLklLIV.plotmin",0.);
+  Double_t plotmax           = env->GetValue("jointLklLIV.plotmax",0.);
+  Double_t plotScale         = env->GetValue("jointLklLIV.plotScale",1.);
+  Double_t deltaLogLkl       = env->GetValue("jointLklLIV.deltaLogLkl",2.71);
+  TString  fInputDataPath    = env->GetValue("jointLklLIV.path","");
+  //TString  fdNdEDir          = fInputDataPath+"/"+env->GetValue("jointLklLIV.dNdEDir","")+"/";
+  TString  fPlotsDir         = fInputDataPath+"/"+env->GetValue("jointLklLIV.plotsDir","")+"/";
+  TString  provval           = env->GetValue("jointLklLIV.dNdEpSignalDir","-");
   TString  fdNdEpSignalDir   = fInputDataPath+"/"+provval+"/";
-  Float_t  mcG               = env->GetValue("jointLklDM.mcG",0.);  //assumed value of <sv> for simulations
-  TString  massList          = env->GetValue("jointLklDM.MassList","");
-  Bool_t   exportData        = env->GetValue("jointLklDM.exportData",kFALSE);
-  Double_t svMin             = env->GetValue("jointLklDM.exportSvMin",0.);
-  Double_t svMax             = env->GetValue("jointLklDM.exportSvMax",0.);
-  Bool_t   svLogStep         = env->GetValue("jointLklDM.exportSvLogStep",kTRUE);
-  Int_t    svNPoints         = env->GetValue("jointLklDM.exportSvNPoints",0.);  
-  TString  fExportDataPath   = fInputDataPath+"/"+env->GetValue("jointLklDM.exportDataPath","")+"/";
+  Float_t  mcG               = env->GetValue("jointLklLIV.mcG",0.);  //assumed value of <sv> for simulations
+  //TString  massList          = env->GetValue("jointLklLIV.MassList","");
+/*  Bool_t   exportData        = env->GetValue("jointLklLIV.exportData",kFALSE);
+  Double_t svMin             = env->GetValue("jointLklLIV.exportSvMin",0.);
+  Double_t svMax             = env->GetValue("jointLklLIV.exportSvMax",0.);
+  Bool_t   svLogStep         = env->GetValue("jointLklLIV.exportSvLogStep",kTRUE);
+  Int_t    svNPoints         = env->GetValue("jointLklLIV.exportSvNPoints",0.);  
+  TString  fExportDataPath   = fInputDataPath+"/"+env->GetValue("jointLklLIV.exportDataPath","")+"/";*/
       
   // fill the list of masses to be studied
-  UInt_t  nmass0  = re.Split(massList);
+  /*UInt_t  nmass0  = re.Split(massList);
   Double_t* massval0 = new Double_t[nmass0];
   for(UInt_t imass=0;imass<nmass0;imass++)
-    massval0[imass] = re[imass].Atof();
+    massval0[imass] = re[imass].Atof();*/
 
   // Set some flags
   Bool_t  isSimulation       = seed>=0;
-  Bool_t  ioHdNdEpSignal     = provval.CompareTo("-");
-  Bool_t  isDecay            = !process.CompareTo("dec",TString::kIgnoreCase);
+  //Bool_t  ioHdNdEpSignal     = provval.CompareTo("-");
+  //Bool_t  isDecay            = !process.CompareTo("dec",TString::kIgnoreCase);
+  //
+  // WE WILL NEED THIS FLAGS FOR LIN/QUAD LIV/DSR SUP/SUL !!!
   
   // define some labels according to input data
   TString simulationlabel    = (isSimulation?  "MC"    : "Data");
-  TString strprocess         = (isDecay?       "Decay" : "Annihilation");
+  //TString strprocess         = (isDecay?       "Decay" : "Annihilation");
   
-  // Decode the channel and save the decoded channels and branching ratios in channelval and brval, respectively.
-  TObjArray* coefficients = channel.Tokenize("+");
-  Int_t nChannels = coefficients->GetEntries();
-  TString* channelval = new TString[nChannels];
-  Double_t* brval = new Double_t[nChannels];
-  // call the function that decodes the coefficients of the channel
-  decode_channel(coefficients,nChannels,channelval,brval);
-
   // annihilation/decay channel string
-  TString strchannel;
+  /*TString strchannel;
   TString normchannel;
   Double_t minmass = 0;
   std::ostringstream buffer;
@@ -211,39 +205,31 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
       else if(!channelval[iChannel].CompareTo("branon",TString::kIgnoreCase))     {strchannel.Append("branon");            minmass=0;}
       else strchannel = "";
     }
-  if(isDecay) minmass*=2;
+  if(isDecay) minmass*=2;*/
   
-  // Remove mass values below kinematical threshold
-  Int_t           nskippedmass = GetNSkippedMasses(nmass0,massval0,minmass);
-  Int_t           nmass        = nmass0-nskippedmass; 
-  const Double_t* massval      = massval0+nskippedmass;
-
   // Print-out configuration info (part 2)
   cout << "*** I/O PATH                 : " << fInputDataPath << endl;
   cout << "***" << endl;
   cout << "*** LABEL                    : " << label <<  endl;
-  cout << "*** PROCESS                  : " << strprocess << endl;
-  cout << "*** CHANNEL                  : " << channel << endl;
+  cout << "*** PROCESS                  : " << /*strprocess <<*/ endl;
+  cout << "*** CHANNEL                  : " << /*channel <<*/ endl;
   // how many and which channels are we considering?
-  cout << " ** Channel check            : " << normchannel << endl;
+  cout << " ** Channel check            : " << /*normchannel <<*/ endl;
   cout << "*** DATA/MC                  : " << simulationlabel << endl;
   if(isSimulation)
     cout << " ** Seed                     : " << seed << endl;
   cout << "*** G IS POSITIVE            : " << (isGpositive? "YES" : "NO") << endl;
       
   // how many and which mass values are we considering?
-  cout << "*** NUMBER OF MASSES         : " << nmass << endl;
+  /*cout << "*** NUMBER OF MASSES         : " << nmass << endl;
   cout << " ** Mass values              : "; 
   for(Int_t imass=0;imass<nmass;imass++)
     cout << massval[imass] << ((imass<nmass-1)? ", " : "");
-  cout << " GeV" << endl;
+  cout << " GeV" << endl;*/
   
   cout << "*** IRF/DATA PLOTS      : " << (showSamplePlots?   "YES" : "NO") << endl;
   cout << "*** PARABOlA PLOTS      : " << (showParabolaPlots? "YES" : "NO") << endl;
-  cout << "*** Plot y-axis range   : " << plotmin << " to " << plotmax << Form(" %s", (isDecay? "s" : "cm^3/s")) << endl;
-  cout << "*** EXPORT DATA         : " << (exportData? "YES" : "NO") << endl;
-  if(exportData)
-    cout << " ** Format of export    : Glory Duck" << endl;
+  //cout << "*** Plot y-axis range   : " << plotmin << " to " << plotmax << Form(" %s", (isDecay? "s" : "cm^3/s")) << endl;
 
   cout << "***" << endl;
   cout << "***********************************************************************************" << endl;
@@ -252,14 +238,14 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
   // End of print-out configuration info
 
   // Arrays of Lkl parabolas (one per mass value) to be plotted is showParabolaPlots=kTRUE
-  TGraph*  grLklParabola[nmass];
+  /*TGraph*  grLklParabola[nmass];
   for(Int_t imass=0;imass<nmass;imass++)
     grLklParabola[imass] = NULL;
   const Int_t nlines = 5;  // number of lines in parabolas canvas
-  Int_t ncols = TMath::Ceil(nmass/Float_t(nlines)); // number of columns in parabolas canvas
+  Int_t ncols = TMath::Ceil(nmass/Float_t(nlines)); // number of columns in parabolas canvas*/
 
   // Define logJ variable to check if the exportData option can be applied
-  Double_t logJ = 0.;
+  //Double_t logJ = 0.;
 
   // The classes composing the joint likelihood
   Lkl** lkl    = new Lkl*[nMaxLkls];
@@ -273,7 +259,7 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
   for(Int_t iLkl=0;iLkl<nMaxLkls;iLkl++)
     {
       // look for likelihood entries in the rc file
-      TString lklString = env->GetValue(Form("jointLklDM.lklTerm%03d",iLkl),"");
+      TString lklString = env->GetValue(Form("jointLklLIV.lklTerm%03d",iLkl),"");
       if(lklString.CompareTo("")==0) break; // if one index is missing, the search is stopped
       else nLkls++;
       
@@ -281,7 +267,7 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
       UInt_t   nfields   = re.Split(lklString,3);
       if(nfields<2)
 	{
-	  cout << Form("jointLklDM Error: rc file entry for lklTerm%03d has %d entries (minimum of 2 is needed) <---------------- FATAL ERROR!!!",iLkl,nfields);
+	  cout << Form("jointLklLIV Error: rc file entry for lklTerm%03d has %d entries (minimum of 2 is needed) <---------------- FATAL ERROR!!!",iLkl,nfields);
 	  return;
 	}
       
@@ -300,9 +286,9 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
       inputString+=(" path="+fInputDataPath);
 
       // create the proper object according to classType 
-      if(classType.CompareTo("Iact1dUnbinnedLkl")==0)
+      if(classType.CompareTo("IactUnbinnedLivLkl")==0)
 	{	  
-	  lkl[iLkl] =  new Iact1dUnbinnedLkl(inputString);
+	  /*lkl[iLkl] =  new Iact1dUnbinnedLkl(inputString);
 	  lkl[iLkl]->SetName(Form("Iact1dUnbinnedLkl_%02d",iLkl));
 
 	  // save as sample (as opposed to JointLkl)
@@ -322,11 +308,32 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
 	      {
 		  cout << " ## Oops! No data (from input or simulated) associated to " << lkl[iLkl]->GetName() << " <---------------- FATAL ERROR!!!"<< endl;
 		  return;
+	      }	 	      */
+	  lkl[iLkl] =  new IactUnbinnedLivLkl(inputString);
+	  lkl[iLkl]->SetName(Form("IactUnbinnedLivLkl_%02d",iLkl));
+
+	  // save as sample (as opposed to JointLkl)
+	  sample[nsamples++] = lkl[iLkl];
+	  	  
+	  // if it's simulation, simulate the data sample
+	  if(isSimulation)
+	    {
+	      /*if(dynamic_cast<Iact1dUnbinnedLkl*>(lkl[iLkl])->SimulateDataSamples(seed,mcG))
+		{
+		  cout << " ## Oops! Cannot simulate samples for " << lkl[iLkl]->GetName() << " <---------------- FATAL ERROR!!!"<< endl;
+		  return;
+		}*/
+	    }
+	  else
+	    if(dynamic_cast<IactUnbinnedLivLkl*>(lkl[iLkl])->GetNon()<1)
+	      {
+		  cout << " ## Oops! No data (from input or simulated) associated to " << lkl[iLkl]->GetName() << " <---------------- FATAL ERROR!!!"<< endl;
+		  return;
 	      }	 	      
 	}
-      else if(classType.CompareTo("Iact1dBinnedLkl")==0)
+      else if(classType.CompareTo("IactBinnedLivLkl")==0)
 	{
-	  // read input string
+	  /*// read input string
 	  lkl[iLkl] =  new Iact1dBinnedLkl(inputString);
 
 	  // save as sample (as opposed to JointLkl)
@@ -349,6 +356,30 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
 	      {
 		cout << " ## Oops! No data (from input or simulated) associated to " << lkl[iLkl]->GetName() << " <---------------- FATAL ERROR!!!"<< endl;
 		return;
+	      }	 */
+	  // read input string
+	  lkl[iLkl] =  new IactBinnedLivLkl(inputString);
+
+	  // save as sample (as opposed to JointLkl)
+	  sample[nsamples++] = lkl[iLkl];
+
+	  // configure
+	  lkl[iLkl]->SetName(Form("IactBinnedLivLkl_%02d",iLkl));	  
+
+	  // if it's simulation, simulate the data sample
+	  if(isSimulation)
+	    {
+	      /*if(dynamic_cast<Iact1dBinnedLkl*>(lkl[iLkl])->SimulateDataSamples(seed,mcG))
+		{
+		  cout << " ## Oops! Cannot simulate samples for " << lkl[iLkl]->GetName() << " <---------------- FATAL ERROR!!!"<< endl;
+		  return;
+		}*/
+	    }
+	  else
+	    if(dynamic_cast<IactBinnedLivLkl*>(lkl[iLkl])->GetNon()<1)
+	      {
+		cout << " ## Oops! No data (from input or simulated) associated to " << lkl[iLkl]->GetName() << " <---------------- FATAL ERROR!!!"<< endl;
+		return;
 	      }	 
 	}
       else if(classType.CompareTo("JointLkl")==0)
@@ -356,91 +387,12 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
 	  lkl[iLkl] =  new JointLkl(inputString);
 	  lkl[iLkl]->SetName(Form("JointLkl_%02d",iLkl));
 	}
-      else if(classType.CompareTo("FermiTables2016Lkl")==0)
-	{
-	  lkl[iLkl] =  new FermiTables2016Lkl(inputString);
-	  lkl[iLkl]->SetName(Form("FermiTables2016Lkl_%02d",iLkl));
-	}
-      else if(classType.CompareTo("GloryDuckTables2019Lkl")==0)
-	{
-	  GloryDuckTables2019Lkl *tmpLkl =  new GloryDuckTables2019Lkl(inputString);
-          Bool_t massAvailable = kFALSE;
-          for(Int_t jmass=0;jmass<nmass;jmass++)
-            {
-              massAvailable = kFALSE;
-              Double_t massToBeTested = massval[jmass];
-              for(UInt_t kmass=0;kmass<tmpLkl->GetNMasses();kmass++)
-                {
-                  Double_t massInTheFile = tmpLkl->GetActiveMass(kmass);
-                  if(TMath::Abs(massToBeTested-massInTheFile) < 1.e-6)
-                    massAvailable = kTRUE;
-                }
-            }
-          if(!massAvailable)
-            {
-              cout << " ## Oops! At least one mass to be tested is not in the file given as an input <---------------- FATAL ERROR!!!"<< endl;
-              return;
-            }
-	  lkl[iLkl] = tmpLkl;
-	}
       else
 	{
 	  cout << " ## Oops! Lkl class type " << classType << " unkonwn <---------------- FATAL ERROR!!!"<< endl;
 	  return;
 	}
       
-      // Check if the input parameters allow to export data
-      if(exportData)
-        {
-          if(iLkl == 0 && classType.CompareTo("JointLkl")==0)
-            {
-              if(lkl[iLkl]->GetDUnitsOfG() > 1e-5)
-                {
-                  cout << " ## Warning! This format of exported data implies that LogJ is fixed, your main JointLkl object has non-nul DlogJ error, by precaution the exported file will NOT be created." << endl;
-                  exportData=kFALSE;
-                }
-              else
-                continue;
-            }
-          else if(iLkl >=1 && classType.CompareTo("JointLkl")==0)
-            {
-              cout << " ## Warning! This format of exported data implies that one file corresponds to one source, your rc file contains more than one JointLkl object which contradicts this assumption, by precaution the exported file will NOT be created." << endl;
-              exportData=kFALSE;
-            }
-          else if(iLkl==1)
-            {
-	      // casted pointer (for less messy code)
-	      Iact1dUnbinnedLkl* fullLkl = NULL;
-	      if(!strcmp(lkl[iLkl]->ClassName(),"Iact1dUnbinnedLkl")) fullLkl = dynamic_cast<Iact1dUnbinnedLkl*>(lkl[iLkl]);
-	      if(!strcmp(lkl[iLkl]->ClassName(),"Iact1dBinnedLkl"))   fullLkl = dynamic_cast<Iact1dBinnedLkl*>(lkl[iLkl]);
-              logJ = fullLkl->GetLogJ(); //initializing the logJ value with the first one found
-
-              if (lkl[iLkl]->GetDUnitsOfG() > 1e-5)
-                {
-                  cout << " ## Warning! This format of exported data implies that LogJ is fixed, one of your objects has non-nul DlogJ error, by precaution the exported file will NOT be created." << lkl[iLkl]->GetDUnitsOfG() << endl;
-                  exportData=kFALSE;
-                }
-            }
-          else
-            {
-	      // casted pointer (for less messy code)
-	      Iact1dUnbinnedLkl* fullLkl = NULL;
-	      if(!strcmp(lkl[iLkl]->ClassName(),"Iact1dUnbinnedLkl")) fullLkl = dynamic_cast<Iact1dUnbinnedLkl*>(lkl[iLkl]);
-	      if(!strcmp(lkl[iLkl]->ClassName(),"Iact1dBinnedLkl"))   fullLkl = dynamic_cast<Iact1dBinnedLkl*>(lkl[iLkl]);
-
-              if(TMath::Abs(fullLkl->GetLogJ()-logJ) > 1e-5)
-                {
-                  cout << " ## Warning! This format of exported data implies that one file corresponds to one source, your rc file contains differents LogJ values which contradicts this assumption, by precaution the exported file will NOT be created." << endl;
-                  exportData=kFALSE;
-                }
-              else if (lkl[iLkl]->GetDUnitsOfG() > 1e-5)
-                {
-                  cout << " ## Warning! This format of exported data implies that LogJ is fixed, one of your objects has non-nul DlogJ error, by precaution the exported file will NOT be created." << endl;
-                  exportData=kFALSE;
-                }
-            }
-        }
-
       // Construct the joint Lkl tree structure: link lkl[iLkl] to the proper JointLkl object with parLkl
       if(iLkl>0 && parLkl>=iLkl) // only lkls with lower indices (already processed) are accepted
 	{
@@ -472,51 +424,10 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
   
   lkl[0]->PrintData();
 
-  // Create stream to export data
-  std::ofstream data;
-
-  // Preparing data export to Glory Duck format
-  Double_t svStep = 0.;
-  Double_t isv = svMax;
-  Double_t svScan[svNPoints+1];
-  vector<vector<Double_t> > vlkl2D(svNPoints+1);
-  if (exportData)
-    {
-      // Create directory and open file for data export
-      TString exportDataDir = fExportDataPath+simulationlabel+"/";
-      gSystem->Exec(Form("mkdir -p %s",exportDataDir.Data()));
-      TString seedTag  = (seed<0? "" : Form("_%05d",seed));
-      TString dataFile = exportDataDir+label+seedTag+".txt";
-      data.open(dataFile);
-
-      // Write first line of the file
-      data << left << setw(15) << logJ;
-      for(Int_t imass=0;imass<nmass;imass++)
-        data << left << setw(15) << massval[imass];
-      data << endl;
-
-      // Define svStep
-      Int_t counter = 0;
-      if (svLogStep) svStep = TMath::Exp(TMath::Log(TMath::Abs(svMax/svMin))/svNPoints);
-      else           svStep = TMath::Abs(svMax-svMin)/svNPoints;
-
-      // Initialise svScan with all <sv> values
-      for(Int_t i=0; i<=svNPoints; i++)
-        {
-          svScan[counter] = isv;
-          counter++;
-          if (svLogStep) isv/=svStep;
-          else           isv-=svStep;
-          vlkl2D[i] = vector<Double_t>(nmass,0.);
-        }
-    }
-
   // Loop over masses and compute the limits
   ///////////////////////////////////////////
-  Double_t svLimVal[nmass];
-  Double_t svSenVal[nmass];
-  // initialize the array of translation factors for the brane tension limits
-  Double_t braneTensionVal[nmass];
+  Double_t svLimVal[1];
+  Double_t svSenVal[1];
 
   TCanvas** hadcanvas = new TCanvas*[nsamples];
   for(Int_t isample=0;isample<nsamples;isample++)
@@ -527,7 +438,7 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
   cout << endl;
   cout << "***********************************************************************************" << endl;
   cout << "**** LOOPING OVER MASSES, CONFIGURE MASS-DEPENDENT HISTOS AND CALL LKL MINIMIZATION" << endl;
-  for(Int_t imass=0;imass<nmass;imass++)
+  /*for(Int_t imass=0;imass<nmass;imass++)
     {
       // Configure
       const Double_t mass = massval[imass];
@@ -724,7 +635,7 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
                 } 
             }
         } // end of loop over samples
-      cout << " *** End of reading dN_signal/dE and dN_signal/dE' histograms" << endl;  
+      cout << " *** End of reading dN_signal/dE and dN_signal/dE' histograms" << endl;
 
       // Plot IRF and data
       /////////////////////
@@ -741,8 +652,8 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
 		hadcanvas[isample]->SetTitle(Form("IRFs and data for sample %d",isample));
 		hadcanvas[isample]->cd(5);
 		TLatex* ltchannel;
-		if(nChannels == 1) ltchannel = new TLatex(0.8,0.8,strchannel);
-		else ltchannel = new TLatex(0.7,0.8,strchannel);
+		//if(nChannels == 1) ltchannel = new TLatex(0.8,0.8,strchannel);
+		//else ltchannel = new TLatex(0.7,0.8,strchannel);
 		ltchannel->SetTextSize(0.055);
 		ltchannel->SetNDC();
 		ltchannel->Draw();
@@ -752,13 +663,13 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
 	      {
 		hadcanvas[isample]->cd(5);
 		TH1F* hdNdESignal = new TH1F(*fullLkl->GetHdNdESignal());
-		hdNdESignal->SetLineStyle((imass+1)%8);
+		//hdNdESignal->SetLineStyle((imass+1)%8);
 		hdNdESignal->DrawCopy("same");
 		delete hdNdESignal;
 
 		hadcanvas[isample]->cd(6);
 		TH1F* hdNdEpSignal = new TH1F(*fullLkl->GetHdNdEpSignal());
-		hdNdEpSignal->SetLineStyle((imass+1)%8);
+		//hdNdEpSignal->SetLineStyle((imass+1)%8);
 		hdNdEpSignal->Scale(hdNdEpSignal->GetBinContent(0));				
 		hdNdEpSignal->DrawCopy("same");
 		delete hdNdEpSignal;
@@ -766,7 +677,7 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
 		if(fullLkl->GetHdNdEpSignalOff())
 		  {
 		    TH1F* hdNdEpSignalOff = new TH1F(*fullLkl->GetHdNdEpSignalOff());
-		    hdNdEpSignalOff->SetLineStyle((imass+1)%8);
+		    //hdNdEpSignalOff->SetLineStyle((imass+1)%8);
 		    hdNdEpSignalOff->Scale(hdNdEpSignalOff->GetBinContent(0));				
 		    hdNdEpSignalOff->DrawCopy("same");
 		    delete hdNdEpSignalOff;
@@ -780,10 +691,10 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
       cout << " *** Computing -2logL (parabola) vs g:" << endl;
       if(!lkl[0]->ComputeLklVsG())
         {
-          cout << " *** Skipping DM mass = " << mass << " GeV because checks were not successfull (maybe none of the samples will produce any signal event?)" << endl;
-          svLimVal[imass] = 0.;
-          svSenVal[imass] = 0.;
-          braneTensionVal[imass] = 0.;
+          //cout << " *** Skipping DM mass = " << mass << " GeV because checks were not successfull (maybe none of the samples will produce any signal event?)" << endl;
+          svLimVal[1] = 0.;
+          svSenVal[1] = 0.;
+          //braneTensionVal[imass] = 0.;
           continue;
         }
 
@@ -862,22 +773,9 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
         for (Int_t isv=0; isv<=svNPoints; isv++)
           vlkl2D[isv][imass] = grLklParabola[imass]->Eval(svScan[isv]) - grLklParabola[imass]->Eval(0);
 
-    } // end of loop over DM masses
+    } // end of loop over DM masses*/
 
-  if (exportData)
-    for (Int_t isv=0; isv<=svNPoints; isv++)
-      {
-        data << left << setw(15) << svScan[isv];
-
-        for(Int_t imass=0;imass<nmass;imass++)
-          data << left << setw(15) << vlkl2D[isv][imass];
-
-        // go to next line in the file
-        data << endl;
-      }
-
-  // Close file for exporting data
-  if (exportData) data.close();
+return;
 
   //################
   // FINAL RESULTS
@@ -888,7 +786,7 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
   Float_t minparval =  9e99;
   Float_t maxparval = -9e99;
   cout << "Limit/sensitivity values are scaled by a factor " << plotScale << endl;
-  for(Int_t imass=0;imass<nmass;imass++)
+  /*for(Int_t imass=0;imass<nmass;imass++)
     {
       svLimVal[imass]*=plotScale;
       svSenVal[imass]*=plotScale;
@@ -896,7 +794,7 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
       if(svSenVal[imass]<minparval) minparval=svSenVal[imass];
       if(svLimVal[imass]>maxparval) maxparval=svLimVal[imass];
       if(svSenVal[imass]>maxparval) maxparval=svSenVal[imass];
-    }
+    }*/
 
 
   // Report limits
@@ -905,7 +803,7 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
   cout << "READY-TO-COPY results: " << endl;
   cout << endl;
 
-  cout << "Double_t mass[nmass]  = {";
+  /*cout << "Double_t mass[nmass]  = {";
   for(Int_t imass=0;imass<nmass;imass++)
     cout << massval[imass] << (imass<nmass-1? "," : "");
   cout << "};" << endl;
@@ -916,47 +814,21 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
   cout << "Double_t snstvt[nmass]  = {";
   for(Int_t imass=0;imass<nmass;imass++)
     cout << svSenVal[imass] << (imass<nmass-1? "," : "");
-  cout << "};" << endl;
+  cout << "};" << endl;*/
 
-  // To translate the sigmav values from [cm^3 s^-1] to [GeV^-2], the sigmav limits have to be divided by
-  // h_bar^2 c^3 = (6.582119569^-25 [GeV s])^2 * (299792458x10^2 [cm s^-1])^3 = 1.167329990*10^-17 [GeV^2 cm^3 s^-1]
-  // with following the values provided by the Particle Data Group in http://pdg.lbl.gov/2019/reviews/rpp2018-rev-phys-constants.pdf
-  // h_bar = 6.582119569*10^-22 [MeV s] = 6.58211956910*^-25 [GeV s] and c = 299792458.0 [m s^−1] = 299792458.0*10^2 [cm s^−1].
-  // The final conversion formula also contains:
-  // - a factor (0.001) to translate the brane tension limit from [GeV] to [TeV]
-  // - a power 1/8 to relate sigma to f (see equation 7 of https://arxiv.org/abs/hep-ph/0302041)
-  Double_t unit_translation = 1.167329990*TMath::Power(10., -17.);
-
-  Double_t fLimVal[nmass];
-  Double_t fSenVal[nmass];
-  if(!channel.CompareTo("branon",TString::kIgnoreCase))
-    {
-      cout << "Double_t branetension_limit[nmass]  = {";
-      for(Int_t imass=0;imass<nmass;imass++)
-        {
-          fLimVal[imass] = 0.001*TMath::Power((braneTensionVal[imass]*unit_translation)/svLimVal[imass], 1./8.);
-          cout << fLimVal[imass] << (imass<nmass-1? "," : "");
-        }
-      cout << "};" << endl;
-      cout << "Double_t branetension_snstvt[nmass]  = {";
-      for(Int_t imass=0;imass<nmass;imass++)
-        {
-          fSenVal[imass] = 0.001*TMath::Power((braneTensionVal[imass]*unit_translation)/svSenVal[imass], 1./8.);
-          cout << fSenVal[imass] << (imass<nmass-1? "," : "");
-        }
-      cout << "};" << endl;
-    }
+  Double_t fLimVal[1];
+  Double_t fSenVal[1];
  
   cout << endl;
   cout << "**********************************" << endl;
   cout << "Joint likelihood results " << endl;
   cout << "**********************************" << endl;
   cout << endl;
-  cout << Form("%s limit vs mass",(isDecay? "tauDM" : "<sv>")) << endl;
+  //cout << Form("%s limit vs mass",(isDecay? "tauDM" : "<sv>")) << endl;
   cout << "*****************************************" << endl;
-  for(Int_t imass=0;imass<nmass;imass++)
+/*  for(Int_t imass=0;imass<nmass;imass++)
     cout << "mass = " << massval[imass] << " GeV, " << Form("%s^UL = ",(isDecay? "tauDM" : "<sv>")) << svLimVal[imass]<< Form(", %s_snstvty = ",(isDecay? "tauDM" : "<sv>")) << svSenVal[imass] << (isDecay? "s-1" : " cm^3s-1") << endl;
-  cout << endl;
+  cout << endl;*/
  
     
   // Create and plot the global limit and sensitivity curves   
@@ -968,7 +840,7 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
     }
 
   // graph for <sv> upper limits
-  TGraph* grsvlim  = new TGraph(nmass,massval,svLimVal);
+  /*TGraph* grsvlim  = new TGraph(nmass,massval,svLimVal);
   grsvlim->SetName(isDecay? "grtaulim": "grsvlim");
   grsvlim->SetLineColor(1);
   
@@ -1001,10 +873,10 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
         grbtsen->SetLineStyle(2);
       else
         grbtsen->SetLineStyle(1);
-    }
+    }*/
 
   // canvas for plots
-  TCanvas* limcanvas  = new TCanvas("limcanvas",Form("Dark matter %s limits",(isDecay? "tauDM" : "<sv>")),800,800);
+  /*TCanvas* limcanvas  = new TCanvas("limcanvas",Form("Dark matter %s limits",(isDecay? "tauDM" : "<sv>")),800,800);
 
   TH1I *dummylim = new TH1I("dummylim",Form("%s ULs vs mass",(isDecay? "#tau_{DM}" : "<#sigma v>")),1,massval[0],massval[nmass-1]);
   dummylim->SetStats(0);
@@ -1035,39 +907,7 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
 
   gPad->SetLogx();
   gPad->SetLogy();
-  gPad->SetGrid();
-
-  // canvas for brane tension plots
-  TCanvas* branoncanvas = NULL;
-  if(!channel.CompareTo("branon",TString::kIgnoreCase))
-    {
-      branoncanvas  = new TCanvas("branoncanvas","Brane tension limits",800,800);
-
-      TH1I *dummybtlim = new TH1I("dummybtlim",Form("f ULs vs mass"),1,massval[0],massval[nmass-1]);
-      dummybtlim->SetStats(0);
-      dummybtlim->SetMinimum(0.001*TMath::Power((braneTensionVal[0]*unit_translation)/plotmax, 1./8.));
-      dummybtlim->SetMaximum(0.001*TMath::Power((braneTensionVal[nmass-1]*unit_translation)/plotmin, 1./8.));
-      dummybtlim->SetXTitle("m_{DM} [GeV]");
-      dummybtlim->SetYTitle("f [TeV]");
-      dummybtlim->DrawCopy();
-      grbtsen->Draw("l");
-      if(showLimitPlots)
-        grbtlim->Draw("l");  
-
-      TLegend* btlimleg = new TLegend(0.2, 0.7, 0.45, 0.85);
-      btlimleg->SetFillColor(0);
-      btlimleg->SetMargin(0.40);
-      btlimleg->SetBorderSize(0);
-      if(showLimitPlots)
-        btlimleg->AddEntry(grbtlim,"Limit","L");
-      btlimleg->AddEntry(grbtsen,"Sensitivity","L");
-      btlimleg->Draw();
-
-      gPad->SetLogx();
-      gPad->SetLogy();
-      gPad->SetGrid();
-    }
-  
+  gPad->SetGrid();*/
 
   // save plots
   TString realPlotDir = fPlotsDir+simulationlabel+"/";
@@ -1076,43 +916,23 @@ void jointLklDM(TString configFileName="$GLIKESYS/rcfiles/jointLklDM.rc",Int_t s
   
   TString seedTag  = (seed<0? "" : Form("_%05d",seed));
   
-  limcanvas->Print(realPlotDir+"root/"+label+"_"+simulationlabel+"_limits"+seedTag+".root");
-  limcanvas->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+"_limits"+seedTag+".pdf");
+  //limcanvas->Print(realPlotDir+"root/"+label+"_"+simulationlabel+"_limits"+seedTag+".root");
+  //limcanvas->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+"_limits"+seedTag+".pdf");
   if(showParabolaPlots)
     {
-      limcanvas->Print(realPlotDir+"root/"+label+"_"+simulationlabel+"_2logLVsG"+seedTag+".root");
-      limcanvas->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+"_2logLVsG"+seedTag+".pdf");
+      //limcanvas->Print(realPlotDir+"root/"+label+"_"+simulationlabel+"_2logLVsG"+seedTag+".root");
+      //limcanvas->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+"_2logLVsG"+seedTag+".pdf");
     }
   if(showSamplePlots) 
     for(Int_t isample=0;isample<nsamples;isample++)
       {	
-	hadcanvas[isample]->Print(realPlotDir+"root/"+label+"_"+simulationlabel+Form("_histos_sample%02d",isample)+seedTag+".root");
-	hadcanvas[isample]->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+Form("_histos_sample%02d",isample)+seedTag+".pdf");
+	//hadcanvas[isample]->Print(realPlotDir+"root/"+label+"_"+simulationlabel+Form("_histos_sample%02d",isample)+seedTag+".root");
+	//hadcanvas[isample]->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+Form("_histos_sample%02d",isample)+seedTag+".pdf");
       }
   
-  // save branon plots
-  if(!channel.CompareTo("branon",TString::kIgnoreCase))
-    {
-      // only for 'Data'
-      if(!isSimulation)
-        {
-          branoncanvas->Print(realPlotDir+"root/"+label+"_"+simulationlabel+"_branetension_limits.root");
-          branoncanvas->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+"_branetension_limits.pdf");
-        }
-    }
-
   // Clean up and close 
   /////////////////////
   delete [] lkl;
-}
-
-Int_t GetNSkippedMasses(Int_t nm,const Double_t* vm,Double_t minm)
-{
-  Int_t im=0;
-  for(im=0;im<nm;im++)
-    if(vm[im]>minm)
-      break;
-  return im;
 }
 
 void setDefaultStyle()
@@ -1155,110 +975,3 @@ void setDefaultStyle()
   gStyle->SetGridColor(13);
 }
 
-// Decode the channel and save the decoded channels and branching ratios in channelval and brval, respectively.
-void decode_channel(TObjArray* coefficients, Int_t &nChannels, TString *channelval, Double_t *brval)
-{
-  Float_t sumBR = 0.0;
-  TString factorstring, coefficientstring;
-  for (Int_t iChannel = 0; iChannel < nChannels; iChannel++)
-    {
-      factorstring = (TString)((TObjString *)(coefficients->At(iChannel)))->String();
-      TObjArray *factors = factorstring.Tokenize("*");
-      // if there is only one channel selected
-      if(nChannels == 1)
-        {
-          // save the decoded channel in channelval
-          if(factors->GetEntries() == 1)       channelval[iChannel] = factorstring;
-          else if (factors->GetEntries() == 2) channelval[iChannel] = (TString)((TObjString *)(factors->At(1)))->String();
-          // check if the channel argument is in the right form
-          else
-            {
-              cout << " ## Oops! Something went wrong with the parsing " << factorstring << " of the channel!  <---------------- FATAL ERROR!!!"<< endl;
-              return;
-            }
-          // set the branching ratio to 1.0 (100%), since there is only one channel selected
-          brval[iChannel] = sumBR = 1.0;
-        }
-      // if there is a linear combination of channels selected
-      else
-        {
-          // check if the channel argument is in the right form
-          if(factors->GetEntries() == 1)
-            {
-              channelval[iChannel] = factorstring;
-              brval[iChannel] = 1.0;
-              sumBR += brval[iChannel];
-            }
-          else if (factors->GetEntries() == 2)
-            {
-              // save the decoded channels and branching ratios in channelval and brval, respectively.
-              for (Int_t i = 0; i < factors->GetEntries(); i++)
-                {
-                  coefficientstring = (TString)((TObjString *)(factors->At(i)))->String();
-                  if (coefficientstring.IsFloat() && i == 0)
-                    {
-                      brval[iChannel] = coefficientstring.Atof();
-                      sumBR += brval[iChannel];
-                    }
-                  else
-                    channelval[iChannel] = coefficientstring;
-                }
-            }
-          // check if the channel argument is in the right form
-          else
-            {
-              cout << " ## Oops! Something went wrong with the parsing " << factorstring << " of the channel!  <---------------- FATAL ERROR!!!"<< endl;
-              return;
-            }
-        }
-    }
-  // Normalize the branching ratios if they differ from 1.0 (100%)
-  if (sumBR != 1.0)
-      for (Int_t iChannel = 0; iChannel < nChannels; iChannel++) brval[iChannel] /= sumBR;
-}
-
-// Compute the branching ratios for the branon model for each DM mass and save the channels and branching ratios in channelval and brval, respectively.
-void compute_branonBR(Float_t &mass, Int_t &nChannels, TString *channelval, Double_t *brval, Double_t &translation_factor)
-  {
-    // The included annihilation channels for the branon model
-    TString particle_type[9]        = {"bb","cc","tt","ee","mumu","tautau","WW","ZZ","hh"};
-    // The corresponding masses in GeV
-    Float_t particle_mass[9]        = {4.18,1.28,173.1,0.511e-3,0.106,1.7768,80.39,91.19,125.0};
-    // Classification of the elementary particles
-    TString dirac_fermions          = "cc_tt_bb_ee_mumu_tautau";
-    TString gauge_bosons            = "WW_ZZ";
-    TString scalar_bosons           = "hh";
-    // Loop over the channels and compute their branching ratios
-    Double_t ann_crosssection[9]    = {0.0};
-    Double_t total_ann_crosssection = 0.0;
-    for (Int_t iChannel = 0; iChannel < nChannels; iChannel++)
-      {
-        // distinguish between the different elementary particles
-        if(mass >= particle_mass[iChannel])
-          {
-            if (dirac_fermions.Contains(particle_type[iChannel]))
-              ann_crosssection[iChannel] = (mass*mass * particle_mass[iChannel]*particle_mass[iChannel])/(16. * TMath::Pi()*TMath::Pi()) * (mass*mass - particle_mass[iChannel]*particle_mass[iChannel]) * TMath::Sqrt(1-((particle_mass[iChannel]*particle_mass[iChannel])/(mass*mass)));
-            else if (gauge_bosons.Contains(particle_type[iChannel]))
-              ann_crosssection[iChannel] = (mass*mass)/(64. * TMath::Pi()*TMath::Pi()) * (4. * TMath::Power(mass,4) - 4. * mass*mass * particle_mass[iChannel]*particle_mass[iChannel] + 3. * TMath::Power(particle_mass[iChannel],4)) * TMath::Sqrt(1-((particle_mass[iChannel]*particle_mass[iChannel])/(mass*mass)));
-            else if (scalar_bosons.Contains(particle_type[iChannel]))
-              ann_crosssection[iChannel] = (mass*mass)/(32. * TMath::Pi()*TMath::Pi()) * TMath::Power((2.* mass*mass + particle_mass[iChannel]*particle_mass[iChannel]),2) * TMath::Sqrt(1-((particle_mass[iChannel]*particle_mass[iChannel])/(mass*mass)));
-            // WW with a factor 2 (because the W is complex)
-            if(!particle_type[iChannel].CompareTo("WW",TString::kIgnoreCase)) ann_crosssection[iChannel] *= 2.;
-            // hh with a factor 1/2 (because the Higgs is real)
-            if(!particle_type[iChannel].CompareTo("hh",TString::kIgnoreCase)) ann_crosssection[iChannel] *= 0.5;
-          }
-        // add up all ann_crosssection for the normalization
-        total_ann_crosssection += ann_crosssection[iChannel];
-      }
-    // Normalization of the branching ratios
-    for (Int_t iChannel = 0; iChannel < nChannels; iChannel++)
-      {
-        ann_crosssection[iChannel] /= total_ann_crosssection;
-        // save the computed branching ratios in brval
-        brval[iChannel] = ann_crosssection[iChannel];
-        // save the corresponding channels in channelval
-        channelval[iChannel] = particle_type[iChannel];
-      }
-    // Computation of the translation factor for the tension of the brane
-    translation_factor = total_ann_crosssection;
-  }
