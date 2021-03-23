@@ -113,7 +113,7 @@ Int_t IactBinnedLivLkl::InterpretInputString(TString inputString)
           dataSet->GetOnEntry(i);
 	  if(i==0) fTmin = (eventOnT-58497.)*86400.;
 	  if(i==(GetNon()-1)) fTmax = (eventOnT-58497.)*86400.;
-	  cout << setprecision(20) << " on " << i << " t = " << eventOnT << "in days or " << eventOnT*86400. << " in sec" << endl;
+	  //cout << setprecision(20) << " on " << i << " t = " << eventOnT << "in days or " << eventOnT*86400. << " in sec" << endl;
           fOnSampleTime[i] = (eventOnT-58497.)*24.*60.*60.;
 	  if(fOnSampleTime[i]==-1) fOnSampleTime[i] = (i+1)*(90./GetNon());
 	  //if(fOnSampleTime[i]==-1) fOnSampleTime[i] = f2->GetRandom();
@@ -121,7 +121,7 @@ Int_t IactBinnedLivLkl::InterpretInputString(TString inputString)
       for(Int_t i=0;i<GetNoff();i++)
         {
           dataSet->GetOffEntry(i);
-	  cout << setprecision(20) << " off " << i << " t = " << eventOffT << endl;
+	  //cout << setprecision(20) << " off " << i << " t = " << eventOffT << endl;
           fOffSampleTime[i] = (eventOffT-58497.)*24.*60.*60.;
 	  if(fOffSampleTime[i]==-1) fOffSampleTime[i] = (i+1.5)*(90./GetNon());
 	  //if(fOffSampleTime[i]==-1) fOffSampleTime[i] = f2->GetRandom();
@@ -440,7 +440,7 @@ cout << nbinsT << " " << fTmin << " " << fTmax << " " << nbinsE << " " << GetEmi
       // fill histo
       for(Int_t i=0;i<GetNon();i++)
         {
-		cout << "onSample[i] = " << onSample[i] << endl;
+		//cout << "onSample[i] = " << onSample[i] << endl;
           h->Fill(fOnSampleTime[i],onSample[i]);
 	}
     

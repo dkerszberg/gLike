@@ -16,27 +16,27 @@ jointLklLIV.showSamplePlots:   TRUE
 jointLklLIV.showParabolaPlots: TRUE
 jointLklLIV.showLimitPlots:    TRUE
 # Comment out the plot range for automatic selection
-jointLklLIV.plotmin: 1e-25
-jointLklLIV.plotmax: 1e-22
+jointLklLIV.plotmin: 1e20
+jointLklLIV.plotmax: 1e16
 # Scale factor for results (e.g. to simulate for a Tobs and get results for another Tobs)
 # jointLklLIV.plotScale: 1
 
 # Configuration for data exporter into the Glory Duck file format (i.e. likelihood values for all DM masses specified below)
-jointLklLIV.exportData: TRUE
+#jointLklLIV.exportData: TRUE
 # Minimum, maximum and number of scanned values
-jointLklLIV.exportSvMin: 1e-28
-jointLklLIV.exportSvMax: 1e-18
-jointLklLIV.exportSvNPoints: 1000
+#jointLklLIV.exportSvMin: 1e-28
+#jointLklLIV.exportSvMax: 1e-18
+#jointLklLIV.exportSvNPoints: 1000
 # Log-spaced <sv> values?
-jointLklLIV.exportSvLogStep: TRUE
+#jointLklLIV.exportSvLogStep: TRUE
 # Directory for output files
-jointLklLIV.exportDataPath: exported_files
+#jointLklLIV.exportDataPath: exported_files
 
 # Path (will be added to all specified files and directories in this rcfile)
 jointLklLIV.path: ./
 
 # Directory with dN/dE files
-jointLklLIV.dNdEDir: DM/dNdE/Cirelli
+#jointLklLIV.dNdEDir: DM/dNdE/Cirelli
 
 # Directory for output plots
 jointLklLIV.plotsDir: plots
@@ -51,16 +51,17 @@ jointLklLIV.plotsDir: plots
 ANALYSIS CONFIGURATION
 ######################
 
-# channel to be analyzed (bb, cc, tt, tautau, mumu, WW, ZZ, hh, gammagamma, pi0pi0, pi0gamma, ee, branon or an arbitrary linear combination of them)
-# The linear combination must be written this form:'br_1*channel_1+...+br_n*channel_n'!
-jointLklLIV.Channel: bb
+# Special relativty framework (LIV or DSR)
+jointLklLIV.Framework: LIV
 
-# Process to be analyzed ("ann" or "dec" for annhilation and decay, respectively, default is annihilation
-# (remember to change consistently the list of masses and J-factor value and uncertainty)
-jointLklLIV.Process: ann
+# Energy dependence of the effect ("linear" or "quadratic", default is linear)
+jointLklLIV.Order: linear
+
+# Plus or minus ("sup" or "sub" for supermulinal and subluminal respectively, default is superluminal)
+jointLklLIV.Scenario: sup
 
 # list of DM masses to be considered (in GeV)
-jointLklLIV.MassList: 100 200 500 1000 2000 5000 10000 20000 50000 100000
+#jointLklLIV.MassList: 100 200 500 1000 2000 5000 10000 20000 50000 100000
 
 # Mean g (number of signal events) for simulations
 # this should be replaced in future release by <sv>
@@ -69,7 +70,7 @@ jointLklLIV.MassList: 100 200 500 1000 2000 5000 10000 20000 50000 100000
 jointLklLIV.mcG: 0
 
 # If TRUE (FALSE) g is restricted to positive values only (i.e. Fermi prescription for lkl maximizing out of the physical region)
-jointLklLIV.isGpositive: TRUE
+jointLklLIV.isGpositive: FALSE
 
 # Delta(-2logLkl) for limits (2.71 = 95% CL, 4.495 = 5sigma)
 jointLklLIV.deltaLogLkl: 2.71
