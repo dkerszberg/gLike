@@ -1,6 +1,7 @@
 /* ======================================================================== *\
 !
 !   Author(s): Daniel Kerszberg         10/2019 <mailto:dkerszbegr@ifae.es>
+!   Author(s): Jelena Striskovic        04/2021 <mailto:jelena.striskovic@fizika.unios.hr>
 ! 
 \* ======================================================================== */
 
@@ -197,7 +198,9 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
     {
       fldre.Split(re[ifield]);
       TString optname = fldre[0];
-      if(optname.CompareTo("path",TString::kIgnoreCase)==0)
+      if(optname.CompareTo("z",TString::kIgnoreCase)==0)
+        fZ=fldre[1].Atof();
+      else if(optname.CompareTo("path",TString::kIgnoreCase)==0)
         path=fldre[1];
       else if(optname.CompareTo("inputfile",TString::kIgnoreCase)==0)
         inputfileName=fldre[1];
@@ -257,6 +260,7 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       cout << "fTmax = " << fTMax << endl;
       cout << "fEmin = " << GetEmin() << endl;
       cout << "fEmax = " << GetEmax() << endl;
+      cout << "fZ = "    << fZ << endl;
       //BuildAndBinOnOffHistos();
   return 0;
 }
@@ -319,9 +323,7 @@ Int_t IactUnbinnedLivLkl::MakeChecks()
     {
       cout << "IactUnbinnedLivLkl::MakeChecks (" << GetName() << ") Warning: problems building On and/or Off histos!" << endl;
       return 1;
-    }
-
-cout << "Coucou" << endl;*/
+    }*/
 
   SetChecked();
   return 0;

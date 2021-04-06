@@ -63,6 +63,8 @@ class IactUnbinnedLivLkl : public Iact1dUnbinnedLkl//, public virtual Lkl
   Double_t  fTMin;               // [s] Minimum measured time of considered events
   Double_t  fTMax;               // [s] Maximum measured time of considered events
  
+  Double_t  fZ;                  // [] Redshift on the source
+
   Int_t    fNFineLEBins;         // number of fine bins for internal histos in energy
   Double_t fFineLEMin;           // minimum log(energy[GeV]) for internal histos
   Double_t fFineLEMax;           // maximum log(energy[GeV]) for internal histos 
