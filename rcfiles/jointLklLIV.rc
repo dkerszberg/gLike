@@ -125,5 +125,6 @@ JOINT LIKELIHOOD CONFIGURATION
 #   DlogJ indicates that the uncertainty in the units of a particular lkl term is an *independent* random variable.
 #
 jointLklLIV.lklTerm000: JointLkl            -         Dz=0.01
-jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.1  Dz=0     inputfile=data/root/genericIact_dataIRF_01.root  
-jointLklLIV.lklTerm002: IactBinnedLivLkl    0  z=0.1  Dz=0     inputfile=data/root/genericIact_dataIRF_02.root  nbins=20
+jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.3  Dz=0     inputfile=data/root/genericIact_dataIRF_01.root  LC="powerlaw"
+jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.2  Dz=0     inputfile=data/root/genericIact_dataIRF_02.root  LC="gaussian"
+#jointLklLIV.lklTerm002: IactBinnedLivLkl    0  z=0.1  Dz=0     inputfile=data/root/genericIact_dataIRF_02.root  nbins=20
