@@ -437,7 +437,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
   Bool_t Init_canvas_parabolas = kFALSE;
   cout << endl;
   cout << "***********************************************************************************" << endl;
-  cout << "**** LOOPING OVER MASSES, CONFIGURE MASS-DEPENDENT HISTOS AND CALL LKL MINIMIZATION" << endl;
+  //cout << "**** LOOPING OVER MASSES, CONFIGURE MASS-DEPENDENT HISTOS AND CALL LKL MINIMIZATION" << endl;
   /*for(Int_t imass=0;imass<nmass;imass++)
     {
       // Configure
@@ -446,33 +446,14 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
       
       cout << "****" << endl;
       cout << "**** DM mass = " << mass << " GeV  (" << imass+1 << "/" << nmass << ")" << endl;
-      cout << "**************************************" << endl;
-      // compute the branching ratios for the branon model for each DM mass
-      if(!channel.CompareTo("branon",TString::kIgnoreCase))
-        {
-          // release the memory of channelval and brval
-          delete [] channelval;
-          delete [] brval;
-          // number of considering channels
-          nChannels = 9;
-          channelval = new TString[nChannels];
-          brval = new Double_t[nChannels];
-          // call the function that computes the branching ratios and save them in channelval and brval
-          compute_branonBR(mdm,nChannels,channelval,brval,braneTensionVal[imass]);
-          // Print-Out the freshly computed branching ratios for validation
-          cout << "**** Branon branching ratios: ";
-          for(Int_t iChannel=0;iChannel<nChannels;iChannel++)
-            cout << brval[iChannel] << "*" << channelval[iChannel] << ((iChannel<nChannels-1)? "+" : "");
-          cout << endl;
-          cout << "**** Translation factor for the tension of the brane: " << braneTensionVal[imass] << endl;
-        }
+      cout << "**************************************" << endl;*/
 
       // compute the minimum precision the mass needs to be reported with
-      Int_t mprec;
+      /*Int_t mprec;
       for(mprec=10;mprec>=0;mprec--)
 	if(mass<TMath::Power(10,-mprec))
 	  break;
-      TString mprecform = Form("%%.%df",mprec+2);
+      TString mprecform = Form("%%.%df",mprec+2);*/
 
       // Loop over samples to read the dN/dE and dN/dE' histos for signal from files
       ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -480,19 +461,20 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
       cout << " *** Reading dN/dE histos for signal and read or compute dN/dE' histos for each samples:" << endl;
       for(Int_t isample=0;isample<nLkls;isample++)
         {
-	  if(!strcmp(lkl[isample]->ClassName(),"Iact1dUnbinnedLkl") || !strcmp(lkl[isample]->ClassName(),"Iact1dBinnedLkl"))
+	  //if(!strcmp(lkl[isample]->ClassName(),"IactUnbinnedLivLkl") || !strcmp(lkl[isample]->ClassName(),"IactBinnedLivLkl"))
+	  if(!strcmp(lkl[isample]->ClassName(),"IactUnbinnedLivLkl"))
 	    {
 	      // casted pointer (for less messy code)
-	      Iact1dUnbinnedLkl* fullLkl = NULL;
-	      if(!strcmp(lkl[isample]->ClassName(),"Iact1dUnbinnedLkl")) fullLkl = dynamic_cast<Iact1dUnbinnedLkl*>(lkl[isample]);
-	      if(!strcmp(lkl[isample]->ClassName(),"Iact1dBinnedLkl"))   fullLkl = dynamic_cast<Iact1dBinnedLkl*>(lkl[isample]);
+	      IactUnbinnedLivLkl* fullLkl = NULL;
+	      if(!strcmp(lkl[isample]->ClassName(),"IactUnbinnedLivLkl")) fullLkl = dynamic_cast<IactUnbinnedLivLkl*>(lkl[isample]);
+	      //if(!strcmp(lkl[isample]->ClassName(),"IactBinnedLivLkl"))   fullLkl = dynamic_cast<IactBinnedLivLkl*>(lkl[isample]);
 	      
 	      
 	      cout << "  ** Reading histos for sample " << fullLkl->GetName() << ":" << endl;
 	      // Delete existing fHdNdESignal and create empty one
 	      fullLkl->ResetdNdESignal();
 	      
-	      for(Int_t iChannel=0;iChannel<nChannels;iChannel++)
+	      /*for(Int_t iChannel=0;iChannel<nChannels;iChannel++)
 		{
 		  // Read dN/dE for signal from file (try if it exists)
 		  if(brval[iChannel] != 0.0)
@@ -580,11 +562,11 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 			    cout << "Ok!" << endl;
 			}
 		    }
-		}
+		}*/
 	      
 	      // Read or create dN/dE' for signal
 	      TString dNdEpSignalFileName;
-	      if(ioHdNdEpSignal)
+	      /*if(ioHdNdEpSignal)
 		{
 		  TString dNdEpSignalFileNameForm = fdNdEpSignalDir+"dNdEpSignal_"+fullLkl->GetName()+"_"+normchannel+Form("_m%s",mprecform.Data())+".root";
 		  dNdEpSignalFileName = Form(dNdEpSignalFileNameForm,(isDecay? mass/2. : mass));
@@ -600,16 +582,16 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 		  // if file exists, read histo and use it
 		  else
 		    cout << "Ok!" << endl;	   	      
-	        }
+	        }*/
 	      
 	      // Set the units of g for the different samples (this also creates the fHdNdEpSignal histo
-	      if(isDecay)
+	      /*if(isDecay)
 	        fullLkl->SetDMDecayUnitsForG(mass);
 	      else	      
-	        fullLkl->SetDMAnnihilationUnitsForG(mass);
+	        fullLkl->SetDMAnnihilationUnitsForG(mass);*/
 	      
 	      // Save the dN_signal/dE' created in the SetDMAnnihilationUnitsForG call
-	      if(ioHdNdEpSignal && saveHistosInFile)
+	      /*if(ioHdNdEpSignal && saveHistosInFile)
 	        {
 		  // saving fHdNdEpSignal histo
 		  gSystem->Exec(Form("mkdir -p %s",fdNdEpSignalDir.Data()));
@@ -623,9 +605,15 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 		  delete dNdEpSignalFile;
 		  delete hdNdEpSignal;
 		  cout << "Ok!" << endl;
-	        } 
+	        } */
 	    }
-          else if(!strcmp(lkl[isample]->ClassName(),"GloryDuckTables2019Lkl"))
+	  else if(!strcmp(lkl[isample]->ClassName(),"IactBinnedLivLkl"))
+	    {
+	      // casted pointer (for less messy code)
+	      IactBinnedLivLkl* fullLkl = NULL;
+	      fullLkl = dynamic_cast<IactBinnedLivLkl*>(lkl[isample]);
+            }
+          /*else if(!strcmp(lkl[isample]->ClassName(),"GloryDuckTables2019Lkl"))
             {
               GloryDuckTables2019Lkl* gdLkl = dynamic_cast<GloryDuckTables2019Lkl*>(lkl[isample]);
               if(gdLkl->SetActiveMass(mass))
@@ -633,7 +621,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
                   cout << " ## Oops! The DM mass selected (" << mass << " GeV) doesn't exist in the input file <---------------- FATAL ERROR!!!" << endl;
                   return;
                 } 
-            }
+            }*/
         } // end of loop over samples
       cout << " *** End of reading dN_signal/dE and dN_signal/dE' histograms" << endl;
 
@@ -641,9 +629,10 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
       /////////////////////
       if(showSamplePlots)
 	// loop over samples
-	for(Int_t isample=0;isample<nsamples;isample++)
+	/*for(Int_t isample=0;isample<nsamples;isample++)
 	  {
-	    Iact1dUnbinnedLkl* fullLkl = dynamic_cast<Iact1dUnbinnedLkl*>(sample[isample]);
+	    IactUnbinnedLivLkl* fullLkl = dynamic_cast<IactUnbinnedLivLkl*>(sample[isample]);
+	    //IactUnbinnedLivLkl* fullLkl = sample[isample];
 	    
 	    if(!Init_canvas_samples)
 	      {
@@ -685,7 +674,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	      }	    
 	    gPad->Modified();
 	    gPad->Update();
-	  } // end of loop over samples
+	  } // end of loop over samples*/
       
       // compute -2logLkl vs g for precise limit computation
       cout << " *** Computing -2logL (parabola) vs g:" << endl;
@@ -695,7 +684,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
           svLimVal[1] = 0.;
           svSenVal[1] = 0.;
           //braneTensionVal[imass] = 0.;
-          continue;
+          //continue;
         }
 
       cout << endl;
@@ -705,7 +694,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
       cout << endl;
       
       // Compute the limits (<sv> or 1/tauDM) vs DM mass
-      if(isGpositive) // use Fermi criterium
+      /*if(isGpositive) // use Fermi criterium
 	{
 	  grLklParabola[imass] = lkl[0]->GetLklVsG();
 	  Double_t lklat0      = grLklParabola[imass]->Eval(0);
@@ -726,7 +715,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	{
 	  svSenVal[imass]=1./svSenVal[imass];
 	  svLimVal[imass]=1./svLimVal[imass];
-	}
+	}*/
 
       
       // Plot -2logLkl vs <sv> (parabolas) if computed and requested
@@ -734,7 +723,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
       if(showParabolaPlots)
 	{
 	  // get the graph of -2logLkl vs g*unitsOfG
-	  grLklParabola[imass] = lkl[0]->GetLklVsG();
+	  /*grLklParabola[imass] = lkl[0]->GetLklVsG();
 	  grLklParabola[imass]->SetName(Form("grLklParabola_%02d",imass));
 
 	  if(!Init_canvas_parabolas)
@@ -764,18 +753,18 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	  grLklParabola[imass]->Draw("l");
 	  gPad->SetGrid();
 	  gPad->Modified();
-	  gPad->Update();
+	  gPad->Update();*/
 	}
 
       // Save -2logLkl vs <sv> in file
       //////////////////////////////////////////////////////////////
-      if (exportData)
+      /*if (exportData)
         for (Int_t isv=0; isv<=svNPoints; isv++)
-          vlkl2D[isv][imass] = grLklParabola[imass]->Eval(svScan[isv]) - grLklParabola[imass]->Eval(0);
-
+          vlkl2D[isv][imass] = grLklParabola[imass]->Eval(svScan[isv]) - grLklParabola[imass]->Eval(0);*/
+/*
     } // end of loop over DM masses*/
 
-return;
+//return;
 
   //################
   // FINAL RESULTS
@@ -819,6 +808,9 @@ return;
   Double_t fLimVal[1];
   Double_t fSenVal[1];
  
+  cout << "Limit  = " << fLimVal[0] << endl;
+  cout << "Sensitivity  = " << fSenVal[0] << endl;
+
   cout << endl;
   cout << "**********************************" << endl;
   cout << "Joint likelihood results " << endl;
@@ -830,7 +822,6 @@ return;
     cout << "mass = " << massval[imass] << " GeV, " << Form("%s^UL = ",(isDecay? "tauDM" : "<sv>")) << svLimVal[imass]<< Form(", %s_snstvty = ",(isDecay? "tauDM" : "<sv>")) << svSenVal[imass] << (isDecay? "s-1" : " cm^3s-1") << endl;
   cout << endl;*/
  
-    
   // Create and plot the global limit and sensitivity curves   
   //////////////////////////////////////////////////////////
   if(plotmin==0 && plotmax==0)

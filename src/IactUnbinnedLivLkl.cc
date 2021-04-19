@@ -153,8 +153,8 @@ static const Float_t  gFineTMax  = 1e03;                   // [s] default value 
 static const Double_t gCenterBin       = 0.5;                    // decide which value represents bin in histogram (= 0 for lower bin edge, 0.5 for the middle, 1 for the right edge)
 
 // static functions (for internal processing of input data)
-static Int_t  SmearHistogram(TH2D* sp,TH2D* smsp,TGraph* grreso,TGraph* grbias);
-static Int_t  SmearHistogram(TH2D* sp,TH2D* smsp,TH2F* mm);
+static Int_t  Smear2Histogram(TH2D* sp,TH2D* smsp,TGraph* grreso,TGraph* grbias);
+static Int_t  Smear2Histogram(TH2D* sp,TH2D* smsp,TH2F* mm);
 static Int_t copyBinByBin(TH2D* ih,TH2D* oh,Double_t scale=0,Bool_t isDiff=kTRUE);
 
 // -2logL function for minuit
@@ -356,11 +356,12 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
       if(GetMigMatrix())
         cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpSignal from fHdNdESignal, fHAeff & fMigMatrix... " << flush;
       else
-        cout << "Iact1dUnbinnedLkl::CheckHistograms Message: will create fHdNdEpSignal from fHdNdESignal, fHAeff, fGEreso & fGEbias... " << flush;
+        cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpSignal from fHdNdESignal, fHAeff, fGEreso & fGEbias... " << flush;
 
       // multiply dNdESignal times Aeff
       TH2D* hdNdESignalAeff = new TH2D("hdNdESignalAeff","Product of dN/dE for Signal and Aeff",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
       hdNdESignalAeff->SetDirectory(0);
+      cout << "After setdirectory(0) 1" << endl;
       //hdNdESignalAeff->Multiply(GetHAeff(),fHdNdESignal);
       TH1D* haeff = (TH1D*)GetHAeff()->Clone();
       for(Int_t ibin=1;ibin<=fNFineTBins;ibin++)
@@ -372,25 +373,39 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
               hdNdESignalAeff->SetBinContent(ibin,jbin,fHdNdESignal->GetBinContent(ibin,jbin)*GetHAeff()->GetBinContent(bin));
             }
         }
+      cout << "After loop 2" << endl;
       //hdNdESignalAeff->SaveAs("./bkg_Accept.root");
 
       // create fHdNdEpSignal   
       fHdNdEpSignal         = new TH2D("fHdNdEpSignal","dN/dE' for Signal",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+      cout << "After loop 3" << endl;
       fHdNdEpSignal->SetDirectory(0);
+      cout << "After loop 4" << endl;
 
       // smear hdNdESignalAeff
-      TH2F* MigMatrix = (TH2F*)GetMigMatrix()->Clone();
+      //TH2F* MigMatrix = (TH2F*)GetMigMatrix()->Clone();
+      TH2F* MigMatrix = NULL;
+      if(GetMigMatrix()) MigMatrix = (TH2F*)GetMigMatrix()->Clone();
+      TGraph* GEreso = NULL;
+      if(GetGEreso()) GEreso = (TGraph*)GetGEreso()->Clone();
+      TGraph* GEbias = NULL;
+      if(GetGEbias()) GEbias = (TGraph*)GetGEbias()->Clone();
+      cout << "here?" << endl;
       if(GetMigMatrix())
         {
-          if(SmearHistogram(hdNdESignalAeff,fHdNdEpSignal,MigMatrix))
-          //if(SmearHistogram(hdNdESignalAeff,fHdNdEpSignal,GetGEreso(),GetGEbias()))
+      cout << "here? if" << endl;
+          if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,MigMatrix))
+          //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GetGEreso(),GetGEbias()))
             return 1;
         }
-      /*else
+      else if (GetGEreso() && GetGEbias())
         {
-          if(SmearHistogram(hdNdESignalAeff,fHdNdEpSignal,fGEreso,fGEbias))
+          //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,fGEreso,fGEbias))
+      cout << "here? else" << endl;
+          //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GetGEreso(),GetGEbias()))
+          if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GEreso,GEbias))
             return 1;
-        }*/
+        }
 
       cout << "Done! " << endl;
       // clean
@@ -427,13 +442,13 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
       TH2F* MigMatrix = (TH2F*)GetMigMatrix()->Clone();
       if(GetMigMatrix())
         {
-          if(SmearHistogram(hdNdEBkgAeff,fHdNdEpBkg,MigMatrix))
-          //if(SmearHistogram(hdNdESignalAeff,fHdNdEpSignal,GetGEreso(),GetGEbias()))
+          if(Smear2Histogram(hdNdEBkgAeff,fHdNdEpBkg,MigMatrix))
+          //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GetGEreso(),GetGEbias()))
             return 1;
         }
       /*else
         {
-          if(SmearHistogram(hdNdESignalAeff,fHdNdEpSignal,fGEreso,fGEbias))
+          if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,fGEreso,fGEbias))
             return 1;
         }*/
 
@@ -459,6 +474,64 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
 }
 
 ////////////////////////////////////////////////////////////////
+// Smear a histogram <sp> (in log of true energy) using 
+// the energy dispersion function described by grreso and grbias
+// which are energy resolution and bias vs log(E[GeV])
+// and put the result in histogram <smsp> (in measured energy)
+//
+// Return 0 in case of success
+//        1 otherwise
+//
+Int_t Smear2Histogram(TH2D* sp,TH2D* smsp,TGraph* grreso,TGraph* grbias)
+{
+  // checks
+  if(!sp || !smsp || !grreso || !grbias)
+    { 
+      cout << "Smear2Histogram Warning: missing histos" << endl;
+      return 1;
+    }
+
+  //Int_t nbinste = sp->GetNbinsX();              // number of bins in input histo
+  Int_t nbinste = sp->GetNbinsY();              // number of bins in input histo
+  //Int_t nbinsme = smsp->GetNbinsX();            // number of bins in output histo
+  Int_t nbinsme = smsp->GetNbinsY();            // number of bins in output histo
+
+  // do the convolution of sp with energy resolution and store result in smsp
+  for(Int_t ibin=0;ibin<sp->GetXaxis()->GetNbins();ibin++) //added burte force on 19/04/2021
+    {
+cout << "ibin = " << ibin << endl;
+  for(Int_t ibinte=0;ibinte<nbinste;ibinte++)
+    {
+      Double_t let  = sp->GetYaxis()->GetBinCenter(ibinte+1); // log true energy
+      Double_t et   = TMath::Power(10,let);       // true energy
+      Double_t reso = grreso->Eval(let);          // energy resolution
+      Double_t bias = grbias->Eval(let);          // energy bias
+
+      // bin size in true enery
+      Double_t minbinte = TMath::Power(10,sp->GetYaxis()->GetBinLowEdge(ibinte+1));
+      Double_t maxbinte = TMath::Power(10,sp->GetYaxis()->GetBinLowEdge(ibinte+1)+sp->GetYaxis()->GetBinWidth(ibinte+1));
+      Double_t det      = maxbinte-minbinte;  // bin size [GeV]
+
+      for(Int_t ibinme=0;ibinme<nbinsme;ibinme++)
+        {
+          // compute smearing factor
+          Double_t minbinme = TMath::Power(10,smsp->GetYaxis()->GetBinLowEdge(ibinme+1));
+          Double_t maxbinme = TMath::Power(10,smsp->GetYaxis()->GetBinLowEdge(ibinme+1)+smsp->GetYaxis()->GetBinWidth(ibinme+1));
+          Double_t dem      = maxbinme-minbinme;  // bin size [GeV]
+
+          Double_t mingausme    = (minbinme-et*(1+bias))/(et*reso);
+          Double_t maxgausme    = (maxbinme-et*(1+bias))/(et*reso);
+          Double_t gausintegral = (TMath::Erf(maxgausme/TMath::Sqrt(2))-TMath::Erf(mingausme/TMath::Sqrt(2)))/2.;
+          Double_t smfactor     = gausintegral/dem;
+          //smsp->SetBinContent(ibinme+1,smsp->GetBinContent(ibinme+1)+sp->GetBinContent(ibinte+1)*det*smfactor);
+	  smsp->SetBinContent(ibin,ibinme+1,smsp->GetBinContent(ibin,ibinme+1)+sp->GetBinContent(ibin,ibinte+1)*det*smfactor);
+        }
+    }
+  }
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////
 // smear a spectral shape <sp> (in true energy) using 
 // the energy dispersion function from migration matrix <mm>
 // and put the result in histogram <smsp> (in measured energy)
@@ -468,12 +541,12 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
 // N_j total number of events passing all analysis cuts with true energy in DeltaE_j;
 // and DeltaE_j the size [GeV] of the DeltaE_j energy bin
 // 
-Int_t SmearHistogram(TH2D* sp,TH2D* smsp,TH2F* mm)
+Int_t Smear2Histogram(TH2D* sp,TH2D* smsp,TH2F* mm)
 {
   // checks
   if(!sp || !smsp || !mm)
     {
-      cout << "SmearHistogram Warning: missing histos" << endl;
+      cout << "Smear2Histogram Warning: missing histos" << endl;
       return 1;
     }
 
