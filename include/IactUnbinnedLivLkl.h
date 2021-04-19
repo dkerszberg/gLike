@@ -63,7 +63,10 @@ class IactUnbinnedLivLkl : public Iact1dUnbinnedLkl//, public virtual Lkl
   Double_t  fTMin;               // [s] Minimum measured time of considered events
   Double_t  fTMax;               // [s] Maximum measured time of considered events
  
-  Double_t  fZ;                  // [] Redshift on the source
+  Double_t  fZ;                  // [] Redshift of the source
+  Double_t  fDz;                 // [] Redshift error of the source
+
+  TString  fLC;                 // [] Template for the Light Curve (powerlaw,Gaussian...
 
   Int_t    fNFineLEBins;         // number of fine bins for internal histos in energy
   Double_t fFineLEMin;           // minimum log(energy[GeV]) for internal histos
