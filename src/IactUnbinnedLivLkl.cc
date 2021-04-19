@@ -1,7 +1,7 @@
 /* ======================================================================== *\
 !
 !   Author(s): Daniel Kerszberg         10/2019 <mailto:dkerszbegr@ifae.es>
-!   Author(s): Jelena Striskovic        04/2021 <mailto:jelena.striskovic@fizika.unios.hr>
+!   Author(s): Jelena Strišković        04/2021 <mailto:jstriskovic@fizika.unios.hr>
 ! 
 \* ======================================================================== */
 
@@ -200,6 +200,10 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       TString optname = fldre[0];
       if(optname.CompareTo("z",TString::kIgnoreCase)==0)
         fZ=fldre[1].Atof();
+      else if(optname.CompareTo("Dz",TString::kIgnoreCase)==0)
+        fDz=fldre[1].Atof();
+      else if(optname.CompareTo("LC",TString::kIgnoreCase)==0)
+        fLC=fldre[1]; //if I put .Atof(); it will give me an empty thing LC= .
       else if(optname.CompareTo("path",TString::kIgnoreCase)==0)
         path=fldre[1];
       else if(optname.CompareTo("inputfile",TString::kIgnoreCase)==0)
@@ -261,6 +265,8 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       cout << "fEmin = " << GetEmin() << endl;
       cout << "fEmax = " << GetEmax() << endl;
       cout << "fZ = "    << fZ << endl;
+      cout << "fDz = "    << fDz << endl;
+      cout << "fLC = "    << fLC << endl;
       //BuildAndBinOnOffHistos();
   return 0;
 }
