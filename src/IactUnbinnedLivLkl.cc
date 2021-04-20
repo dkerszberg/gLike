@@ -407,7 +407,7 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
             return 1;
         }
 
-      cout << "Done! " << endl;
+      cout << "Done!! " << endl;
       // clean
       delete hdNdESignalAeff;
     }
@@ -417,11 +417,13 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
       if(GetMigMatrix())
         cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpBkg from fHdNdEBkg, fHAeff & fMigMatrix... " << flush;
       else
-        cout << "Iact1dUnbinnedLkl::CheckHistograms Message: will create fHdNdEpBkg from fHdNdEBkg, fHAeff, fGEreso & fGEbias... " << flush;
+     //   cout << "Iact1dUnbinnedLkl::CheckHistograms Message: will create fHdNdEpBkg from fHdNdEBkg, fHAeff, fGEreso & fGEbias... " << flush;
+        cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpBkg from fHdNdEBkg, fHAeff, fGEreso & fGEbias... " << flush;
 
       // multiply dNdEBkg times Aeff
       TH2D* hdNdEBkgAeff = new TH2D("hdNdEBkgAeff","Product of dN/dE for Bkg and Aeff",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
       hdNdEBkgAeff->SetDirectory(0);
+      cout <<"After SetDirectory(0) background" << endl;
       TH1D* haeff = (TH1D*)GetHAeff()->Clone();
       for(Int_t ibin=1;ibin<=fNFineTBins;ibin++)
         {
@@ -433,15 +435,23 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
             }
         }
       //hdNdEBkgAeff->SaveAs("./bkggg_Accept.root");
-
+      cout << "before beginning to create fHdNdEpBkg "<< endl;
       // create fHdNdEpBkg   
       fHdNdEpBkg         = new TH2D("fHdNdEpBkg","dN/dE' for Bkg",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
       fHdNdEpBkg->SetDirectory(0);
-
-      // smear hdNdEBkgAeff
-      TH2F* MigMatrix = (TH2F*)GetMigMatrix()->Clone();
+      cout << "Before smear hdNdEBkgAeff "<< endl; 
+      // smear hdNdEBkgAeff 
+     // TH2F* MigMatrix = (TH2F*)GetMigMatrix()->Clone();
+      TH2F* MigMatrix = NULL;
+      if(GetMigMatrix()) MigMatrix = (TH2F*)GetMigMatrix()->Clone();
+      TGraph* GEreso = NULL;
+      if(GetGEreso()) GEreso = (TGraph*)GetGEreso()->Clone();
+      TGraph* GEbias = NULL;
+      if(GetGEbias()) GEbias = (TGraph*)GetGEbias()->Clone();
+      cout << "After added part of MM,Er and Eb?" << endl; //I have this line
       if(GetMigMatrix())
         {
+      cout <<"if GetMigMatrix() loop" <<endl;
           if(Smear2Histogram(hdNdEBkgAeff,fHdNdEpBkg,MigMatrix))
           //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GetGEreso(),GetGEbias()))
             return 1;
@@ -452,7 +462,7 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
             return 1;
         }*/
 
-      cout << "Done! " << endl;
+      cout << "Done!23 " << endl; //I have this line
       // clean
       delete hdNdEBkgAeff;
     }
