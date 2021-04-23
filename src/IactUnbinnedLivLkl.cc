@@ -361,7 +361,7 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
       // multiply dNdESignal times Aeff
       TH2D* hdNdESignalAeff = new TH2D("hdNdESignalAeff","Product of dN/dE for Signal and Aeff",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
       hdNdESignalAeff->SetDirectory(0);
-      cout << "After setdirectory(0) 1" << endl;
+      //cout << "After setdirectory(0) 1" << endl;
       //hdNdESignalAeff->Multiply(GetHAeff(),fHdNdESignal);
       TH1D* haeff = (TH1D*)GetHAeff()->Clone();
       for(Int_t ibin=1;ibin<=fNFineTBins;ibin++)
@@ -373,14 +373,14 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
               hdNdESignalAeff->SetBinContent(ibin,jbin,fHdNdESignal->GetBinContent(ibin,jbin)*GetHAeff()->GetBinContent(bin));
             }
         }
-      cout << "After loop 2" << endl;
+      //cout << "After loop 2" << endl;
       //hdNdESignalAeff->SaveAs("./bkg_Accept.root");
 
       // create fHdNdEpSignal   
       fHdNdEpSignal         = new TH2D("fHdNdEpSignal","dN/dE' for Signal",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
-      cout << "After loop 3" << endl;
+      //cout << "After loop 3" << endl;
       fHdNdEpSignal->SetDirectory(0);
-      cout << "After loop 4" << endl;
+      //cout << "After loop 4" << endl;
 
       // smear hdNdESignalAeff
       //TH2F* MigMatrix = (TH2F*)GetMigMatrix()->Clone();
@@ -390,21 +390,23 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
       if(GetGEreso()) GEreso = (TGraph*)GetGEreso()->Clone();
       TGraph* GEbias = NULL;
       if(GetGEbias()) GEbias = (TGraph*)GetGEbias()->Clone();
-      cout << "here?" << endl;
+      //cout << "here?" << endl;
       if(GetMigMatrix())
         {
-      cout << "here? if" << endl;
-          if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,MigMatrix))
+      //cout << "here? if" << endl;
+          //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,MigMatrix)) //working but slow
+            //return 1;
+	  fHdNdEpSignal = (TH2D*)hdNdESignalAeff->Clone();
           //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GetGEreso(),GetGEbias()))
-            return 1;
         }
       else if (GetGEreso() && GetGEbias())
         {
           //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,fGEreso,fGEbias))
-      cout << "here? else" << endl;
+      //cout << "here? else" << endl;
           //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GetGEreso(),GetGEbias()))
-          if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GEreso,GEbias))
-            return 1;
+          //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GEreso,GEbias)) //working but slow
+            //return 1;
+	  fHdNdEpSignal = (TH2D*)hdNdESignalAeff->Clone();
         }
 
       cout << "Done!! " << endl;
@@ -423,7 +425,7 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
       // multiply dNdEBkg times Aeff
       TH2D* hdNdEBkgAeff = new TH2D("hdNdEBkgAeff","Product of dN/dE for Bkg and Aeff",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
       hdNdEBkgAeff->SetDirectory(0);
-      cout <<"After SetDirectory(0) background" << endl;
+      //cout <<"After SetDirectory(0) background" << endl;
       TH1D* haeff = (TH1D*)GetHAeff()->Clone();
       for(Int_t ibin=1;ibin<=fNFineTBins;ibin++)
         {
@@ -435,11 +437,11 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
             }
         }
       //hdNdEBkgAeff->SaveAs("./bkggg_Accept.root");
-      cout << "before beginning to create fHdNdEpBkg "<< endl;
+      //cout << "before beginning to create fHdNdEpBkg "<< endl;
       // create fHdNdEpBkg   
       fHdNdEpBkg         = new TH2D("fHdNdEpBkg","dN/dE' for Bkg",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
       fHdNdEpBkg->SetDirectory(0);
-      cout << "Before smear hdNdEBkgAeff "<< endl; 
+      //cout << "Before smear hdNdEBkgAeff "<< endl; 
       // smear hdNdEBkgAeff 
      // TH2F* MigMatrix = (TH2F*)GetMigMatrix()->Clone();
       TH2F* MigMatrix = NULL;
@@ -448,13 +450,14 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
       if(GetGEreso()) GEreso = (TGraph*)GetGEreso()->Clone();
       TGraph* GEbias = NULL;
       if(GetGEbias()) GEbias = (TGraph*)GetGEbias()->Clone();
-      cout << "After added part of MM,Er and Eb?" << endl; //I have this line
+      //cout << "After added part of MM,Er and Eb?" << endl; //I have this line
       if(GetMigMatrix())
         {
-      cout <<"if GetMigMatrix() loop" <<endl;
-          if(Smear2Histogram(hdNdEBkgAeff,fHdNdEpBkg,MigMatrix))
+      //cout <<"if GetMigMatrix() loop" <<endl;
+          //if(Smear2Histogram(hdNdEBkgAeff,fHdNdEpBkg,MigMatrix)) //working but slow
+            //return 1;
           //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GetGEreso(),GetGEbias()))
-            return 1;
+	  fHdNdEpBkg = (TH2D*)hdNdEBkgAeff->Clone();
         }
       /*else
         {
@@ -1071,7 +1074,7 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
 
   fFineTMin=p2;//-0.017*p4*p1 ;
   fFineTMax=p3;//-0.017*p4*p0;
-  cout << "tmin = " << fFineTMin << " and tmax = " << fFineTMax << endl;
+  //cout << "tmin = " << fFineTMin << " and tmax = " << fFineTMax << endl;
   fFineLEMin=TMath::Log10(p0);
   fFineLEMax=TMath::Log10(p1);
 
@@ -1177,12 +1180,12 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
             }
         }
 
-cout << "int = " << fHdNdESignal->Integral() << endl;
+//cout << "int = " << fHdNdESignal->Integral() << endl;
 if (fHdNdESignal->Integral()>0.) fHdNdESignal->Scale(1./fHdNdESignal->Integral());
 //if (fHdNdESignal->Integral()>0. && !firstTime) {fHdNdESignal->Scale(1./integralFirstTime); cout << " NOT FIIIIIRST" << endl;}
 //else if (fHdNdESignal->Integral()>0.) {fHdNdESignal->Scale(1./fHdNdESignal->Integral()); firstTime=kFALSE; integralFirstTime=fHdNdESignal->Integral(); cout << "first time!" << endl;}
 //fHdNdESignal->SaveAs("bkg10.root");
-cout << "int = " << fHdNdESignal->Integral() << endl;
+//cout << "int = " << fHdNdESignal->Integral() << endl;
 if (fHdNdEBkg->Integral()>0.) fHdNdEBkg->Scale(1./fHdNdEBkg->Integral());
 
 if(p9>0.1)
@@ -1398,7 +1401,7 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
       if(onSample[i]<realEmin) realEmin = onSample[i];
     }
 
-    cout << "Emin = " << realEmin << " Emax = " << realEmax << endl;
+    //cout << "Emin = " << realEmin << " Emax = " << realEmax << endl;
 
   //mylkl->SetdNdESignalFunction("",250.,2000.,0.,1200.,eta_inject,2.4,1.5,1.,30.,0.111);
   mylkl->SetdNdESignalFunction("",300.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],0.,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
@@ -1407,10 +1410,10 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
   //mylkl->SetdNdESignalFunction("",250.,2000.,62.,1225.,0.,2.4,1.5,1.,30.,0.);	
   //for(Double_t eta=-2.; eta<2.; eta+=0.1)
   //for(Double_t eta=-2.; eta<2.0; eta+=0.1)
-  for(Int_t eta=0; eta<101; eta++)
+  for(Int_t eta=0; eta<2 /*101*/; eta++)
   {
   // get internal object, histos, values, etc
-  cout << "par0 = " << eta/10.-4. << endl;
+  //cout << "par0 = " << eta/10.-4. << endl;
   //cout << "par0 = " << par[0] << endl;
 
   mylkl->SetdNdESignalFunction("",300.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta/10.-4.,2.4,1.5,1.,30.,0.); // events > 300 GeV --> Non-2
@@ -1445,7 +1448,7 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
   //Double_t b       = (Non + Noff - (1.+tau)*g + TMath::Sqrt(TMath::Power(Non + Noff - (1.+tau)*g,2) + 4.*(1.+tau)*Noff*g))/(2.*(1.+tau));   //par[1]; 
   //Double_t b       = Noff;
   Double_t b       = Noff/tau;
-  cout << "g = " << g << " and b = " << b << endl;
+  //cout << "g = " << g << " and b = " << b << endl;
   //Double_t tauest  = par[2];
   //Double_t boff    = b*tauest;
   Double_t boff    = b*tau;
@@ -1485,9 +1488,9 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
   // On events
   for(ULong_t ievent=0; ievent<Non; ievent++)
     {
-	    if (onSample[ievent] < 2.477) {skipped++; cout << "SKIPPED " << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl; continue;}
+	    if (onSample[ievent] < 2.477) {skipped++; /*cout << "SKIPPED " << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl;*/ continue;}
 	    //if (onSample[ievent] > 3.) continue;
-      cout << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl; 
+      //cout << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl; 
       Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
       //Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]-0.000025*eta*TMath::Power(10.,onSample[ievent])*TMath::Power(10.,onSample[ievent]),onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
       //cout << "lkl val = " << val << endl;
@@ -1499,7 +1502,7 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
             new_lkl[ievent]=-2*TMath::Log(val);
 	    if(TMath::Abs(old_lkl[ievent]-new_lkl[ievent])<0.001) old_lkl[ievent]=-2*TMath::Log(val);
 	    else {
-	      cout << "Why lower? old val = " << old_lkl[ievent] << " and new = " << new_lkl[ievent] << " for E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << endl;
+	      //cout << "Why lower? old val = " << old_lkl[ievent] << " and new = " << new_lkl[ievent] << " for E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << endl;
 	      old_lkl[ievent]=-2*TMath::Log(val);
 	    }
 	  }
@@ -1507,14 +1510,14 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
 	}
       else
 	{
-	  cout << "Why 0? i = " << ievent << " bin = " << hdNdEpOn->FindBin(onSampleTime[ievent],onSample[ievent]) << " E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << " and log = " << val << endl;
+	  //cout << "Why 0? i = " << ievent << " bin = " << hdNdEpOn->FindBin(onSampleTime[ievent],onSample[ievent]) << " E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << " and log = " << val << endl;
         f += 100.;
         //f += 5000.;
         //f += 1e99;
 	}
     }
 
-cout << "skipped = " << skipped << endl;
+//cout << "skipped = " << skipped << endl;
 
   // Off events
   /*for(ULong_t ievent=0; ievent<Noff; ievent++)
@@ -1551,7 +1554,7 @@ cout << "skipped = " << skipped << endl;
     f += 0;
     //f += 1e99;*/
 
-  cout << "-2loglkl = " << f << endl;
+  //cout << "-2loglkl = " << f << endl;
 
   delete hdNdEpOn;
   delete hdNdEpOff;
