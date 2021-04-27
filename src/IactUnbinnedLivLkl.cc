@@ -20,6 +20,7 @@
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TPRegexp.h"
+#include "TRandom3.h"
 
 // include gLike needed classes
 #include "IactUnbinnedLivLkl.h"
@@ -237,23 +238,27 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       fOnSampleTime  = new Double_t[GetNon()];
       fOffSampleTime = new Double_t[GetNoff()];
 
+      TRandom3* generator = new TRandom3();
+
       for(Int_t i=0;i<GetNon();i++)
         {
           dataSet->GetOnEntry(i);
-	  if(i==0) fTMin = (eventOnT-58497.)*86400.;
+	  /*if(i==0) fTMin = (eventOnT-58497.)*86400.;
 	  if(i==(GetNon()-1)) fTMax = (eventOnT-58497.)*86400.;
 	  //cout << setprecision(20) << " on " << i << " t = " << eventOnT << "in days or " << eventOnT*86400. << " in sec" << endl;
           fOnSampleTime[i] = (eventOnT-58497.)*24.*60.*60. - fTMin + 62.1;
 	  if(fOnSampleTime[i]==-1) fOnSampleTime[i] = (i+1)*(90./GetNon());
-	  //if(fOnSampleTime[i]==-1) fOnSampleTime[i] = f2->GetRandom();
+	  //if(fOnSampleTime[i]==-1) fOnSampleTime[i] = f2->GetRandom();*/
+	  fOnSampleTime[i]=generator->Integer(1000)/10.;
         }
       for(Int_t i=0;i<GetNoff();i++)
         {
           dataSet->GetOffEntry(i);
 	  //cout << setprecision(20) << " off " << i << " t = " << eventOffT << endl;
-          fOffSampleTime[i] = (eventOffT-58497.)*24.*60.*60. - fTMin + 62.1;
+          /*fOffSampleTime[i] = (eventOffT-58497.)*24.*60.*60. - fTMin + 62.1;
 	  if(fOffSampleTime[i]==-1) fOffSampleTime[i] = (i+1.5)*(90./GetNon());
-	  //if(fOffSampleTime[i]==-1) fOffSampleTime[i] = f2->GetRandom();
+	  //if(fOffSampleTime[i]==-1) fOffSampleTime[i] = f2->GetRandom();*/
+	  fOffSampleTime[i]=generator->Integer(1000)/10.;
         }
 
       fTMin       = fOnSampleTime[0];
@@ -303,7 +308,7 @@ void IactUnbinnedLivLkl::SetFunctionAndPars(Double_t ginit)
 
   // set and pars initial and step values
   Double_t pStart[gNPars] = {ginit};
-  Double_t pDelta[gNPars] = {1};    // Precision of parameters during minimization
+  Double_t pDelta[gNPars] = {0.1};    // Precision of parameters during minimization
 
   // initialize the free (and nuisance) parameters
   SetParameters(gParName,pStart,pDelta);
@@ -1078,6 +1083,65 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
   fFineLEMin=TMath::Log10(p0);
   fFineLEMax=TMath::Log10(p1);
 
+  fHdNdESignal = new TH2D("fHdNdESignal","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+
+  fHdNdEBkg = new TH2D("fHdNdEpBkg","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+
+  Double_t Emin=p0;
+  Double_t Emax=p1;
+  Double_t Tmin=p2;
+  Double_t Tmax=p3;
+  Double_t eta =p4;
+
+  Double_t log10Emin = TMath::Log10(Emin);
+  Double_t log10Emax = TMath::Log10(Emax);
+
+  Int_t jbinmin = fNFineLEBins*(log10Emin-fFineLEMin)/(fFineLEMax-fFineLEMin);
+  Int_t jbinmax = fNFineLEBins*(log10Emax-fFineLEMin)/(fFineLEMax-fFineLEMin);
+  Double_t realEmin;//  = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbinmin+1));
+  Double_t realEmax;//  = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbinmax+1)+fHdNdESignal->GetYaxis()->GetBinWidth(jbinmax+1));
+  Double_t dE;//        = realEmax-realEmin;
+  Double_t E;//        = realEmax-realEmin;
+
+  Int_t ibinmin = fNFineTBins*(Tmin-fFineTMin)/(fFineTMax-fFineTMin);
+  Int_t ibinmax = fNFineTBins*(Tmax-fFineTMin)/(fFineTMax-fFineTMin);
+  Double_t realTmin;//  = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibinmin+1);
+  Double_t realTmax;//  = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibinmax+1)+fHdNdESignal->GetYaxis()->GetBinWidth(ibinmax+1);
+  Double_t dt;//        = realTmax-realTmin;
+  Double_t t;//        = realTmax-realTmin;
+
+      for(Int_t ibin=ibinmin;ibin<=ibinmax;ibin++)
+        {
+              realTmin = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibin+1);
+	      realTmax = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibin+1)+fHdNdESignal->GetXaxis()->GetBinWidth(ibin+1);
+	      dt = realTmax-realTmin;
+	      t = (realTmax+realTmin)/2.;
+          for(Int_t jbin=jbinmin;jbin<=jbinmax;jbin++)
+            {
+              realEmin = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbin+1));
+	      realEmax = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbin+1)+fHdNdESignal->GetYaxis()->GetBinWidth(jbin+1));
+	      dE = realEmax-realEmin;
+	      E = (realEmax+realEmin)/2.;
+
+	      Double_t dE_model = (TMath::Power(realEmax,-1.5) - TMath::Power(realEmin,-1.5))/-1.5;
+              fHdNdEBkg->SetBinContent(ibin+1,jbin+1,TMath::Power(E,-1.5));
+	      fHdNdESignal->SetBinContent(ibin+1,jbin+1,dE_model*(1+eta));
+	    }
+	}
+
+  if (fHdNdESignal->Integral()>0.) fHdNdESignal->Scale(1./fHdNdESignal->Integral());
+  if (fHdNdEBkg->Integral()>0.) fHdNdEBkg->Scale(1./fHdNdEBkg->Integral());
+
+  CheckHistograms(kTRUE);
+
+  return 0;
+
+  fFineTMin=p2;//-0.017*p4*p1 ;
+  fFineTMax=p3;//-0.017*p4*p0;
+  //cout << "tmin = " << fFineTMin << " and tmax = " << fFineTMax << endl;
+  fFineLEMin=TMath::Log10(p0);
+  fFineLEMax=TMath::Log10(p1);
+
   //cout << "n_t = " << fNFineTBins << " tmin = " << fFineTMin << "tmax = " << fFineTMax << "n_e = " << fNFineLEBins << " emin = " << fFineLEMin << " emax = " << fFineLEMax << endl;
 
   //fHdNdESignal = new TH2D("fHdNdESignal","dN/dE vs t for signal events",fNFineTBins,0.,1500.,fNFineLEBins,fFineLEMin,fFineLEMax);
@@ -1096,17 +1160,18 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
       //fHdNdEpBkg->SetBinContent(ibin+1,jbin+1,1.);
     }*/
 
-  Double_t Emin=p0;
+  // REDEFINTION MAKES COMPILATION FAILED
+  /*Double_t Emin=p0;
   Double_t Emax=p1;
   Double_t Tmin=p2;
   Double_t Tmax=p3;
-  Double_t eta =p4;
+  Double_t eta =p4;*/
   Double_t alpha =p5;
   Double_t beta =p6;
   Double_t T_0 =p7;
   Double_t T_1 =p8;
 
-  Double_t log10Emin = TMath::Log10(Emin);
+  /*Double_t log10Emin = TMath::Log10(Emin);
   Double_t log10Emax = TMath::Log10(Emax);
 
       Int_t jbinmin = fNFineLEBins*(log10Emin-fFineLEMin)/(fFineLEMax-fFineLEMin);
@@ -1121,7 +1186,7 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
       Double_t realTmin;//  = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibinmin+1);
       Double_t realTmax;//  = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibinmax+1)+fHdNdESignal->GetYaxis()->GetBinWidth(ibinmax+1);
       Double_t dt;//        = realTmax-realTmin;
-      Double_t t;//        = realTmax-realTmin;
+      Double_t t;//        = realTmax-realTmin;*/
 
       Double_t constant = TMath::Power(T_1,7.3-1.3*TMath::Log(T_1))*TMath::Power(T_1,beta);
       //cout << "ibinmin = " << ibinmin << " and ibinmax = " << ibinmax << endl;
@@ -1345,6 +1410,7 @@ CheckHistograms(kTRUE);
 //
 void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 {
+  cout << "NOW OUR STUPING STUFF starts" << endl;
   // to avoid warnings only
   gin[0]*=1;
   fpar*=1;
@@ -1371,7 +1437,7 @@ Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
 //ST0310
 //cout << (1.68368e+00)+(-7.95249e-01)*energ+(9.82831e-02)*energ*energ << "   " ;
 //ST0311
-cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*energ*energ << ",   " ;
+//cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*energ*energ << ",   " ;
   }
 
 
@@ -1390,8 +1456,11 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
   UInt_t              Non             = mylkl->GetNon();
   UInt_t              Noff            = mylkl->GetNoff();
   //Float_t             tau             = mylkl->GetTau();
-  Float_t             tau             = 3.;
+  //Float_t             tau             = 3.;
+  Float_t             tau             = 1.;
   Float_t             dTau            = mylkl->GetDTau();
+  Int_t              eta             = par[0];
+  cout << "ETA = " << eta << " is it changing?" << endl;
 
   Double_t realEmin=2000.;
   Double_t realEmax=0.;
@@ -1404,19 +1473,22 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
     //cout << "Emin = " << realEmin << " Emax = " << realEmax << endl;
 
   //mylkl->SetdNdESignalFunction("",250.,2000.,0.,1200.,eta_inject,2.4,1.5,1.,30.,0.111);
-  mylkl->SetdNdESignalFunction("",300.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],0.,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
+  //mylkl->SetdNdESignalFunction("",300.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
+  //mylkl->SetdNdESignalFunction("",100.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
+  mylkl->SetdNdESignalFunction("",100.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta); // skipped < 300 GeV --> Non-2
   //mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],0.,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
   // for all events mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-1],0.,2.4,1.5,1.,30.,0.);
   //mylkl->SetdNdESignalFunction("",250.,2000.,62.,1225.,0.,2.4,1.5,1.,30.,0.);	
   //for(Double_t eta=-2.; eta<2.; eta+=0.1)
   //for(Double_t eta=-2.; eta<2.0; eta+=0.1)
-  for(Int_t eta=0; eta<2 /*101*/; eta++)
-  {
+  //for(Int_t eta=0; eta<2 /*101*/; eta++)
+  //{
+
   // get internal object, histos, values, etc
   //cout << "par0 = " << eta/10.-4. << endl;
   //cout << "par0 = " << par[0] << endl;
 
-  mylkl->SetdNdESignalFunction("",300.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta/10.-4.,2.4,1.5,1.,30.,0.); // events > 300 GeV --> Non-2
+  //mylkl->SetdNdESignalFunction("",300.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta/10.-4.,2.4,1.5,1.,30.,0.); // events > 300 GeV --> Non-2
   //mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta/10.-4.,2.4,1.5,1.,30.,0.); // events > 300 GeV --> Non-2
   // all events mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-1],eta/10.-4.,2.4,1.5,1.,30.,0.);
   //mylkl->SetdNdESignalFunction("",225.,2000.,62.,1225.,eta/10.-4.,2.4,1.5,1.,30.,0.);
@@ -1452,8 +1524,8 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
   //Double_t tauest  = par[2];
   //Double_t boff    = b*tauest;
   Double_t boff    = b*tau;
-  //Double_t fnorm   = g+b+boff;
-  Double_t fnorm   = 726;
+  Double_t fnorm   = g+b+boff;
+  //Double_t fnorm   = 726;
 
   // sum signal and background contributions and normalize resulting pdf (On + Off)
   TH2D* hdNdEpOn  = new TH2D("hdNdEpOn", "On  event rate vs E' vs t",nbinsT,tmin,tmax,nbins,xmin,xmax);
@@ -1461,8 +1533,9 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,g/(g+b),g/(g+b));
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,1./2.,1./2.);
   //hdNdEpOn->Add(hdNdEpSignal,(Non-b)/Non);
-  //hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(Non-b),b);
-  hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(726-119/3.),119/3.);
+  hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(Non-b),b);
+  //hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(726-119/3.),119/3.);
+  hdNdEpOn->SaveAs("./template_test.root");
 
   // normalize
   if(fnorm>0)
@@ -1484,20 +1557,22 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
   // -2 log-likelihood
   f = 0;
 
+
   Int_t skipped = 0;
   // On events
   for(ULong_t ievent=0; ievent<Non; ievent++)
     {
-	    if (onSample[ievent] < 2.477) {skipped++; /*cout << "SKIPPED " << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl;*/ continue;}
+	    //if (onSample[ievent] < 2.477) {skipped++; /*cout << "SKIPPED " << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl;*/ continue;}
+	    if (onSample[ievent] < 2.) {skipped++; /*cout << "SKIPPED " << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl;*/ continue;}
 	    //if (onSample[ievent] > 3.) continue;
-      //cout << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl; 
+      cout << std::setprecision(6) << "E = " << TMath::Power(10.,onSample[ievent]) << ", t = " << onSampleTime[ievent] << endl; 
       Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
       //Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]-0.000025*eta*TMath::Power(10.,onSample[ievent])*TMath::Power(10.,onSample[ievent]),onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
-      //cout << "lkl val = " << val << endl;
+      cout << "lkl val = " << val << endl;
       if(val>0)
 	{
           f += -2*TMath::Log(val);
-	  if(eta==0) old_lkl[ievent]=-2*TMath::Log(val);
+	  /*if(eta==0) old_lkl[ievent]=-2*TMath::Log(val);
 	  else {
             new_lkl[ievent]=-2*TMath::Log(val);
 	    if(TMath::Abs(old_lkl[ievent]-new_lkl[ievent])<0.001) old_lkl[ievent]=-2*TMath::Log(val);
@@ -1505,15 +1580,15 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
 	      //cout << "Why lower? old val = " << old_lkl[ievent] << " and new = " << new_lkl[ievent] << " for E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << endl;
 	      old_lkl[ievent]=-2*TMath::Log(val);
 	    }
-	  }
+	  }*/
 	  //cout << "Why THIS? i = " << ievent << " bin = " << hdNdEpOn->FindBin(onSample[ievent],onSampleTime[ievent]) << " E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << " and log = " << val << endl;
 	}
       else
 	{
 	  //cout << "Why 0? i = " << ievent << " bin = " << hdNdEpOn->FindBin(onSampleTime[ievent],onSample[ievent]) << " E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << " and log = " << val << endl;
-        f += 100.;
+        //f += 100.;
         //f += 5000.;
-        //f += 1e99;
+          f += 1e99;
 	}
     }
 
@@ -1535,7 +1610,7 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
     }*/
 
   // nuisance tau
-    f += -2*TMath::Log(TMath::Gaus(1.47,1.51,0.04,kTRUE));
+  //  f += -2*TMath::Log(TMath::Gaus(1.47,1.51,0.04,kTRUE));
 
   // nuisance tau
   //if(dTau>0)
@@ -1558,19 +1633,20 @@ cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*e
 
   delete hdNdEpOn;
   delete hdNdEpOff;
-  x[eta]=eta/10.-4.;
-  y[eta]=f;
-  }
-  Double_t min=y[0];
+  //x[eta]=eta/10.-4.;
+  //y[eta]=f;
+  //}
+
+  /*Double_t min=y[0];
   Double_t eta_min=99.;
   for(int i=0;i<101;i++) {if (y[i]<min) {min=y[i]; eta_min=x[i];} cout << "i= " << i << " x = " << x[i] << " y = " << y[i] << endl;}
-  for(int i=0;i<101;i++) {y[i]=y[i]-min;}
+  for(int i=0;i<101;i++) {y[i]=y[i]-min;}*/
 
-TLatex latex;
+/*TLatex latex;
 
    TCanvas *c1 = new TCanvas("c1","A Simple Graph Example",200,10,700,500);
    TGraph *gr = new TGraph(101,x,y);
-   gr->SetTitle(";#eta_{1};-2log(#lambda)");
+   gr->SetTitle(";#eta_{1};-2log(#lambda)");*/
 
 /*Double_t actual_value = eta_min;
 Double_t testing= gr->Eval(actual_value-1)-gr->Eval(eta_min)-2.71;
@@ -1601,12 +1677,13 @@ cout << "upper limit = " << actual_value_max << endl;*/
    //c1->SetLogy();
    //gr->GetHistogram()->SetMaximum(min+16.);
    //gr->GetHistogram()->SetMinimum(min-1.);
-   gr->GetHistogram()->SetMaximum(16.);
+   /*gr->GetHistogram()->SetMaximum(16.);
    gr->GetHistogram()->SetMinimum(-1.);
-   gr->Draw("AC*");
+   gr->Draw("AC*");*/
    //latex.DrawLatex(-1.,min+90.,Form("#eta_{inject} = %.1f",eta_inject));
    //latex.DrawLatex(-1.,min+80.,Form("#eta_{rec} = %.1f",eta_min));
    //latex.DrawLatex(-1.,min+80.,Form("#eta_{rec} = %.1f^{+%.1f}_{-%.1f}",eta_min,actual_value_max-eta_min,eta_min-actual_value));
    //latex.DrawLatex(-1.,min+80.,Form("#eta_{rec} = %.1f^{+%.1f}",eta_min,actual_value_max-eta_min));
    //c1->SaveAs("./plot_lkl.pdf");
+  cout << "NOW OUR STUPING STUFF is done for this one step and lkl = " << f << endl;
 }
