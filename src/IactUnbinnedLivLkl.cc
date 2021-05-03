@@ -136,6 +136,8 @@ Double_t tau_ebl[50] = {2.709469999999999847e-03,
 
 TGraph *gr_ebl = new TGraph(50,E_ebl,tau_ebl);
 
+static const Bool_t   verbose_test     = kFALSE;
+
 // class name and title
 static const TString  gName            = "IactUnbinnedLivLkl";
 static const TString  gTitle           = "Iact Unbinned Likelihood for LIV";
@@ -145,10 +147,10 @@ static const Int_t    gNPars           = 1;                      // Number of fr
 static const Char_t*  gParName[gNPars] = {"eta"};                // Name of parameters
 static const Int_t    gNBins           = 100;                    // default number of histograms for dN/dE plots
 
-static const Int_t    gNFineLEBins       = 1000;                   // default number of fine bins for internal histos
+static const Int_t    gNFineLEBins       = 100;                   // default number of fine bins for internal histos
 static const Double_t gFineLEMin       = TMath::Log10(10);       // default minimum log(energy[GeV]) for internal histos
 static const Double_t gFineLEMax       = TMath::Log10(1000000);   // default maximum log(energy[GeV]) for internal histos
-static const Int_t    gNFineTBins       = 1000;                   // default number of fine bins for internal histos
+static const Int_t    gNFineTBins       = 100;                   // default number of fine bins for internal histos
 static const Float_t  gFineTMin  = 1e01;                   // [s] default value of minimum arrival time
 static const Float_t  gFineTMax  = 1e03;                   // [s] default value of maximum arrival time
 static const Double_t gCenterBin       = 0.5;                    // decide which value represents bin in histogram (= 0 for lower bin edge, 0.5 for the middle, 1 for the right edge)
@@ -173,7 +175,8 @@ IactUnbinnedLivLkl::IactUnbinnedLivLkl(TString inputString) :
   fNFineLEBins(gNFineLEBins), fFineLEMin(gFineLEMin), fFineLEMax(gFineLEMax),
   fNFineTBins(gNFineTBins), fFineTMin(gFineTMin), fFineTMax(gFineTMax),
   fOnSampleEnergy(NULL), fOnSampleTime(NULL), fOffSampleTime(NULL),
-  fHdNdESignalLIV(NULL), fHdNdEpSignal(NULL), fHdNdEpBkg(NULL)
+  fHdNdESignalLIV(NULL), fHdNdEpSignal(NULL), fHdNdEBkg(NULL), fHdNdEpBkg(NULL),
+  fZ(0.), fDz(0.), fLC("")
 {
   if(InterpretInputString(inputString))
     cout << "IactUnbinnedLivLkl::IactUnbinnedLivLkl Warning: there were problems interpreting the input string" << endl;      
@@ -403,13 +406,15 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
   if(!fHdNdEpSignal && (fHdNdESignalLIV && GetHAeff() && ((GetGEreso() && GetGEbias()) || GetMigMatrix())))
     {
       if(GetMigMatrix())
-        cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpSignal from fHdNdESignalLIV, fHAeff & fMigMatrix... " << flush;
+        if(verbose_test) cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpSignal from fHdNdESignalLIV, fHAeff & fMigMatrix... " << flush;
       else
-        cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpSignal from fHdNdESignalLIV, fHAeff, fGEreso & fGEbias... " << flush;
+        if(verbose_test) cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpSignal from fHdNdESignalLIV, fHAeff, fGEreso & fGEbias... " << flush;
 
       // multiply dNdESignal times Aeff
       //if(hdNdESignalAeff) delete hdNdESignalAeff;
+      //cout << "mem y.1" << endl;
       TH2D* hdNdESignalAeff = new TH2D("hdNdESignalAeff","Product of dN/dE for Signal and Aeff",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+      //cout << "mem y.2" << endl;
       hdNdESignalAeff->SetDirectory(0);
       //cout << "After setdirectory(0) 1" << endl;
       //hdNdESignalAeff->Multiply(GetHAeff(),fHdNdESignalLIV);
@@ -444,9 +449,9 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
       if(GetMigMatrix())
         {
       //cout << "here? if" << endl;
-          //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,MigMatrix)) //working but slow
-            //return 1;
-	  fHdNdEpSignal = (TH2D*)hdNdESignalAeff->Clone();
+          if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,MigMatrix)) //working but slow
+            return 1;
+	  //fHdNdEpSignal = (TH2D*)hdNdESignalAeff->Clone();
           //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GetGEreso(),GetGEbias()))
         }
       else if (GetGEreso() && GetGEbias())
@@ -454,12 +459,12 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
           //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,fGEreso,fGEbias))
       //cout << "here? else" << endl;
           //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GetGEreso(),GetGEbias()))
-          //if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GEreso,GEbias)) //working but slow
-            //return 1;
-	  fHdNdEpSignal = (TH2D*)hdNdESignalAeff->Clone();
+          if(Smear2Histogram(hdNdESignalAeff,fHdNdEpSignal,GEreso,GEbias)) //working but slow
+            return 1;
+	  //fHdNdEpSignal = (TH2D*)hdNdESignalAeff->Clone();
         }
 
-      cout << "Done!! " << endl;
+      if(verbose_test) cout << "Done!! " << endl;
       // clean
       delete hdNdESignalAeff;
     }
@@ -565,7 +570,7 @@ Int_t Smear2Histogram(TH2D* sp,TH2D* smsp,TGraph* grreso,TGraph* grbias)
   // do the convolution of sp with energy resolution and store result in smsp
   for(Int_t ibin=0;ibin<sp->GetXaxis()->GetNbins();ibin++) //added burte force on 19/04/2021
     {
-cout << "ibin = " << ibin << endl;
+//cout << "ibin = " << ibin << endl;
   for(Int_t ibinte=0;ibinte<nbinste;ibinte++)
     {
       Double_t let  = sp->GetYaxis()->GetBinCenter(ibinte+1); // log true energy
@@ -1052,7 +1057,7 @@ Int_t IactUnbinnedLivLkl::ResetdNdESignal()
   //cout << "mem leak 1.2" << endl;
 
   // Create histo
-  fHdNdESignalLIV=NULL;
+  //fHdNdESignalLIV=NULL;
   fHdNdESignalLIV = new TH2D("fHdNdESignalLIV","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
   fHdNdESignalLIV->SetDirectory(0);
   fHdNdESignalLIV->SetXTitle("t [s]");
@@ -1133,6 +1138,13 @@ Double_t integralFirstTime=0.;
 Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Float_t p1,Float_t p2,Float_t p3,Float_t p4,Float_t p5,Float_t p6,Float_t p7,Float_t p8,Float_t p9)
 {
 
+  // Check that fHdNdESignal exists
+  if(!fHdNdESignalLIV)
+    {
+      cout << "IactUnbinnedLivLkl::AdddNdESignalFunction Error: fHdNdESignalLIV does not exist" << endl;
+      return 1;
+    }
+
   fFineTMin=p2;//-0.017*p4*p1 ;
   fFineTMax=p3;//-0.017*p4*p0;
   //cout << "tmin = " << fFineTMin << " and tmax = " << fFineTMax << endl;
@@ -1140,14 +1152,14 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
   fFineLEMax=TMath::Log10(p1);
 
   // Delete existing fHdNdESignalLIV and create empty one
-  if(fHdNdESignalLIV)
-    delete fHdNdESignalLIV;
+  //if(fHdNdESignalLIV)
+    //delete fHdNdESignalLIV;
 
-  fHdNdESignalLIV = new TH2D("fHdNdESignalLIV","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+  // can be commented ? fHdNdESignalLIV = new TH2D("fHdNdESignalLIV","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
 
   //cout << "mem 3.1.1" << endl;
   //if(fHdNdEBkg)  delete fHdNdEBkg;
-  if(fHdNdEBkg)  cout << "I exist" << endl;
+  //if(fHdNdEBkg)  cout << "I exist" << endl;
   //cout << "mem 3.1.2" << endl;
 
   //fHdNdEBkg=NULL;
@@ -1480,7 +1492,7 @@ CheckHistograms(kTRUE);
 //
 void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 {
-  cout << "NOW OUR STUPING STUFF starts" << endl;
+  //cout << "NOW OUR STUPING STUFF starts" << endl;
   // to avoid warnings only
   gin[0]*=1;
   fpar*=1;
@@ -1530,7 +1542,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   Float_t             tau             = 1.;
   Float_t             dTau            = mylkl->GetDTau();
   Double_t              eta             = par[0];
-  cout << "ETA = " << eta << " is it changing?" << endl;
+  if(verbose_test) cout << "ETA = " << eta << " is it changing?" << endl;
 
   Double_t realEmin=2000.;
   Double_t realEmax=0.;
@@ -1540,8 +1552,8 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
       if(onSample[i]<realEmin) realEmin = onSample[i];
     }
 
-    cout << "Emin = " << realEmin << " Emax = " << realEmax << endl;
-    cout << "Tmin = " << onSampleTime[0] << " Tmax = " << onSampleTime[Non-1] << endl;
+  if(verbose_test) cout << "Emin = " << realEmin << " Emax = " << realEmax << endl;
+  if(verbose_test) cout << "Tmin = " << onSampleTime[0] << " Tmax = " << onSampleTime[Non-1] << endl;
 
   //mylkl->SetdNdESignalFunction("",250.,2000.,0.,1200.,eta_inject,2.4,1.5,1.,30.,0.111);
   //mylkl->SetdNdESignalFunction("",300.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
@@ -1584,7 +1596,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   const Double_t   xmin            = hdNdEpSignal->GetYaxis()->GetXmin();
   const Double_t   xmax            = hdNdEpSignal->GetYaxis()->GetXmax();
 
-  cout << "xmin = " << xmin << " xmax = " << xmax << " tmin = " << tmin << " tmax = " << tmax << endl;
+  if(verbose_test) cout << "xmin = " << xmin << " xmax = " << xmax << " tmin = " << tmin << " tmax = " << tmax << endl;
 
   // Estimated number of background events in signal and background regions
   //Double_t g       = mylkl->GetdNdEpSignalIntegral();///1000000.;//par[0]; //GetG();
@@ -1602,7 +1614,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   Double_t fnorm   = g;
   //Double_t fnorm   = 726;
 
-  cout << "Non = " << Non << " g = " << g << " fnorm = " << fnorm << endl;
+  if(verbose_test) cout << "Non = " << Non << " g = " << g << " fnorm = " << fnorm << endl;
 
   // sum signal and background contributions and normalize resulting pdf (On + Off)
   TH2D* hdNdEpOn  = new TH2D("hdNdEpOn", "On  event rate vs E' vs t",nbinsT,tmin,tmax,nbins,xmin,xmax);
@@ -1641,7 +1653,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   for(ULong_t ievent=0; ievent<Non; ievent++)
     {
 	    //if (onSample[ievent] < 2.477) {skipped++; /*cout << "SKIPPED " << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl;*/ continue;}
-	    //if (onSample[ievent] < 2.) {skipped++; /*cout << "SKIPPED " << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl;*/ continue;}
+	    if (onSample[ievent] < 2.) {skipped++; /*cout << "SKIPPED " << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl;*/ continue;}
 	    //if (onSample[ievent] > 3.) continue;
 	    Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
       //Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]-0.000025*eta*TMath::Power(10.,onSample[ievent])*TMath::Power(10.,onSample[ievent]),onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
@@ -1763,5 +1775,5 @@ cout << "upper limit = " << actual_value_max << endl;*/
    //latex.DrawLatex(-1.,min+80.,Form("#eta_{rec} = %.1f^{+%.1f}_{-%.1f}",eta_min,actual_value_max-eta_min,eta_min-actual_value));
    //latex.DrawLatex(-1.,min+80.,Form("#eta_{rec} = %.1f^{+%.1f}",eta_min,actual_value_max-eta_min));
    //c1->SaveAs("./plot_lkl.pdf");
-  cout << "NOW OUR STUPING STUFF is done for this one step and lkl = " << f << endl;
+  if(verbose_test) cout << "NOW OUR STUPING STUFF is done for this one step and lkl = " << f << endl;
 }
