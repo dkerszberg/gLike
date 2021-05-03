@@ -75,7 +75,7 @@ class IactUnbinnedLivLkl : public Iact1dUnbinnedLkl//, public virtual Lkl
   Double_t fFineTMin;            // minimum time[s] for internal histos
   Double_t fFineTMax;            // maximum time[s] for internal histos
 
-  TH2D*    fHdNdESignal;         //-> dN/dE vs E vs t histogram for signal events
+  TH2D*    fHdNdESignalLIV;         //-> dN/dE vs E vs t histogram for signal events
   TH2D*    fHdNdEpSignal;        //-> dN/dE' vs E' vs t histogram for signal events (normalized)
   TH2D*    fHdNdEpSignalOff;     //-> dN/dE' vs E' vs t histogram for signal events in the off region (normalized)
   TH2D*    fHdNdEBkg;            //-> dN/dE' vs E' vs t histogram for bkbkgts (normalized)

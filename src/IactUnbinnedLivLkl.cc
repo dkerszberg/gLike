@@ -173,7 +173,7 @@ IactUnbinnedLivLkl::IactUnbinnedLivLkl(TString inputString) :
   fNFineLEBins(gNFineLEBins), fFineLEMin(gFineLEMin), fFineLEMax(gFineLEMax),
   fNFineTBins(gNFineTBins), fFineTMin(gFineTMin), fFineTMax(gFineTMax),
   fOnSampleEnergy(NULL), fOnSampleTime(NULL), fOffSampleTime(NULL),
-  fHdNdESignal(NULL), fHdNdEpSignal(NULL), fHdNdEpBkg(NULL)
+  fHdNdESignalLIV(NULL), fHdNdEpSignal(NULL), fHdNdEpBkg(NULL)
 {
   if(InterpretInputString(inputString))
     cout << "IactUnbinnedLivLkl::IactUnbinnedLivLkl Warning: there were problems interpreting the input string" << endl;      
@@ -250,6 +250,8 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
 	  if(fOnSampleTime[i]==-1) fOnSampleTime[i] = (i+1)*(90./GetNon());
 	  //if(fOnSampleTime[i]==-1) fOnSampleTime[i] = f2->GetRandom();*/
 	  fOnSampleTime[i]=generator->Integer(1000)/10.;
+	  if(i==0) fOnSampleTime[i]=0.;
+	  if(i==(GetNon()-1)) fOnSampleTime[i]=100.;
         }
       for(Int_t i=0;i<GetNoff();i++)
         {
@@ -259,6 +261,8 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
 	  if(fOffSampleTime[i]==-1) fOffSampleTime[i] = (i+1.5)*(90./GetNon());
 	  //if(fOffSampleTime[i]==-1) fOffSampleTime[i] = f2->GetRandom();*/
 	  fOffSampleTime[i]=generator->Integer(1000)/10.;
+	  if(i==0) fOffSampleTime[i]=0.;
+	  if(i==(GetNoff()-1)) fOffSampleTime[i]=100.;
         }
 
       fTMin       = fOnSampleTime[0];
@@ -273,6 +277,45 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       cout << "fDz = "    << fDz << endl;
       cout << "fLC = "    << fLC << endl;
       //BuildAndBinOnOffHistos();
+
+  //if(!fHdNdEBkg)
+  fHdNdEBkg = new TH2D("fHdNdEBkg","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+
+  //Int_t jbinmin = fNFineLEBins*(log10Emin-fFineLEMin)/(fFineLEMax-fFineLEMin);
+  //Int_t jbinmax = fNFineLEBins*(log10Emax-fFineLEMin)/(fFineLEMax-fFineLEMin);
+  Int_t jbinmin = fNFineLEBins*(GetEmin()-fFineLEMin)/(fFineLEMax-fFineLEMin);
+  Int_t jbinmax = fNFineLEBins*(GetEmax()-fFineLEMin)/(fFineLEMax-fFineLEMin);
+  Double_t realEmin;//  = TMath::Power(10,fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbinmin+1));
+  Double_t realEmax;//  = TMath::Power(10,fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbinmax+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(jbinmax+1));
+  //Double_t dE;//        = realEmax-realEmin;
+  Double_t E;//        = realEmax-realEmin;
+
+  //Int_t ibinmin = fNFineTBins*(Tmin-fFineTMin)/(fFineTMax-fFineTMin);
+  //Int_t ibinmax = fNFineTBins*(Tmax-fFineTMin)/(fFineTMax-fFineTMin);
+  Int_t ibinmin = fNFineTBins*(fTMin-fFineTMin)/(fFineTMax-fFineTMin);
+  Int_t ibinmax = fNFineTBins*(fTMax-fFineTMin)/(fFineTMax-fFineTMin);
+  //Double_t realTmin;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmin+1);
+  //Double_t realTmax;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmax+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(ibinmax+1);
+  //Double_t dt;//        = realTmax-realTmin;
+  //Double_t t;//        = realTmax-realTmin;
+for(Int_t ibin=ibinmin;ibin<=ibinmax;ibin++)
+{
+      //realTmin = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibin+1);
+      //realTmax = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibin+1)+fHdNdESignalLIV->GetXaxis()->GetBinWidth(ibin+1);
+      //dt = realTmax-realTmin;
+      //t = (realTmax+realTmin)/2.;
+  for(Int_t jbin=jbinmin;jbin<=jbinmax;jbin++)
+    {
+      realEmin = TMath::Power(10,fHdNdEBkg->GetYaxis()->GetBinLowEdge(jbin+1));
+      realEmax = TMath::Power(10,fHdNdEBkg->GetYaxis()->GetBinLowEdge(jbin+1)+fHdNdEBkg->GetYaxis()->GetBinWidth(jbin+1));
+      //dE = realEmax-realEmin;
+      E = (realEmax+realEmin)/2.;
+      //Double_t dE_model = (TMath::Power(realEmax,-1.5) - TMath::Power(realEmin,-1.5))/-1.5;
+      fHdNdEBkg->SetBinContent(ibin+1,jbin+1,TMath::Power(E,-1.5));
+    }
+}
+
+
   return 0;
 }
 
@@ -284,6 +327,7 @@ IactUnbinnedLivLkl::~IactUnbinnedLivLkl()
 {
   if(fOnSampleTime)        delete [] fOnSampleTime;
   if(fOffSampleTime)       delete [] fOffSampleTime;
+  if(fHdNdESignalLIV)      delete [] fHdNdESignalLIV;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -355,27 +399,28 @@ Int_t IactUnbinnedLivLkl::MakeChecks()
 //
 Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
 {
-  // if fHdNdEpSignal is missing, try to construct it from fHdNdESignal, fHAeff fGEreso and fGEbias
-  if(!fHdNdEpSignal && (fHdNdESignal && GetHAeff() && ((GetGEreso() && GetGEbias()) || GetMigMatrix())))
+  // if fHdNdEpSignal is missing, try to construct it from fHdNdESignalLIV, fHAeff fGEreso and fGEbias
+  if(!fHdNdEpSignal && (fHdNdESignalLIV && GetHAeff() && ((GetGEreso() && GetGEbias()) || GetMigMatrix())))
     {
       if(GetMigMatrix())
-        cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpSignal from fHdNdESignal, fHAeff & fMigMatrix... " << flush;
+        cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpSignal from fHdNdESignalLIV, fHAeff & fMigMatrix... " << flush;
       else
-        cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpSignal from fHdNdESignal, fHAeff, fGEreso & fGEbias... " << flush;
+        cout << "IactUnbinnedLivLkl::CheckHistograms Message: will create fHdNdEpSignal from fHdNdESignalLIV, fHAeff, fGEreso & fGEbias... " << flush;
 
       // multiply dNdESignal times Aeff
+      //if(hdNdESignalAeff) delete hdNdESignalAeff;
       TH2D* hdNdESignalAeff = new TH2D("hdNdESignalAeff","Product of dN/dE for Signal and Aeff",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
       hdNdESignalAeff->SetDirectory(0);
       //cout << "After setdirectory(0) 1" << endl;
-      //hdNdESignalAeff->Multiply(GetHAeff(),fHdNdESignal);
+      //hdNdESignalAeff->Multiply(GetHAeff(),fHdNdESignalLIV);
       TH1D* haeff = (TH1D*)GetHAeff()->Clone();
       for(Int_t ibin=1;ibin<=fNFineTBins;ibin++)
         {
           for(Int_t jbin=1;jbin<=fNFineLEBins;jbin++)
             {
-              Double_t lowedge = fHdNdESignal->GetYaxis()->GetBinLowEdge(jbin);
+              Double_t lowedge = fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbin);
               Int_t bin = haeff->FindBin(lowedge,0,0);
-              hdNdESignalAeff->SetBinContent(ibin,jbin,fHdNdESignal->GetBinContent(ibin,jbin)*GetHAeff()->GetBinContent(bin));
+              hdNdESignalAeff->SetBinContent(ibin,jbin,fHdNdESignalLIV->GetBinContent(ibin,jbin)*GetHAeff()->GetBinContent(bin));
             }
         }
       //cout << "After loop 2" << endl;
@@ -444,7 +489,10 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
       //hdNdEBkgAeff->SaveAs("./bkggg_Accept.root");
       //cout << "before beginning to create fHdNdEpBkg "<< endl;
       // create fHdNdEpBkg   
+      //cout << "mem x.1" << endl;
+      if(fHdNdEpBkg) delete fHdNdEpBkg;
       fHdNdEpBkg         = new TH2D("fHdNdEpBkg","dN/dE' for Bkg",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+      //cout << "mem x.2" << endl;
       fHdNdEpBkg->SetDirectory(0);
       //cout << "Before smear hdNdEBkgAeff "<< endl; 
       // smear hdNdEBkgAeff 
@@ -720,11 +768,11 @@ Int_t IactUnbinnedLivLkl::NormalizedNdEHisto(TH2D* histo)
    
 	  Double_t sum = 0.;
           for(Int_t k = 0; k < fNTimeBins-fNRemovedTimeBins; k++) {
-            sum += fHdNdESignal->GetBinContent(k+1,jbin+1);
+            sum += fHdNdESignalLIV->GetBinContent(k+1,jbin+1);
 	  }
 
-          Double_t weight = 1./(fHdNdESignal->GetBinContent(ibin+1,jbin+1)*fHdNdESignal->GetXaxis()->GetBinWidth(ibin+1)*fHdNdESignal->GetYaxis()->GetBinWidth(jbin+1)/sum);
-          //Double_t weight = fHdNdESignal->GetBinContent(ibin+1,jbin+1)/fHdNdESignal->GetEntries();
+          Double_t weight = 1./(fHdNdESignalLIV->GetBinContent(ibin+1,jbin+1)*fHdNdESignalLIV->GetXaxis()->GetBinWidth(ibin+1)*fHdNdESignalLIV->GetYaxis()->GetBinWidth(jbin+1)/sum);
+          //Double_t weight = fHdNdESignalLIV->GetBinContent(ibin+1,jbin+1)/fHdNdESignalLIV->GetEntries();
           //Double_t weight = 1./(fNTimeBins*fNEnergyBins);//IntegrateLogE(GetHdNdEpSignal(),lemin,lemax);
           pLkl->SetUnitsOfG(weight>0? weight : 0);
     
@@ -990,23 +1038,27 @@ cout << "TEST2" << endl;
 
 //////////////////////////////////////////////////////////////////
 // 
-// Recreate a fresh new version of fHdNdESignal
+// Recreate a fresh new version of fHdNdESignalLIV
 //
 // Return 0 in case of success
 //        1 if file is not found
 //
 Int_t IactUnbinnedLivLkl::ResetdNdESignal()
 {
-  // Delete existing fHdNdESignal and create empty one
-  if(fHdNdESignal)
-    delete fHdNdESignal;
+  // Delete existing fHdNdESignalLIV and create empty one
+  //cout << "mem leak 1.1" << endl;
+  if(fHdNdESignalLIV)
+    delete fHdNdESignalLIV;
+  //cout << "mem leak 1.2" << endl;
 
   // Create histo
-  fHdNdESignal = new TH2D("fHdNdESignal","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
-  fHdNdESignal->SetDirectory(0);
-  fHdNdESignal->SetXTitle("t [s]");
-  fHdNdESignal->SetYTitle("log_{10}(E [GeV])");
-  fHdNdESignal->SetZTitle("dN/dE [GeV^{-1}]");
+  fHdNdESignalLIV=NULL;
+  fHdNdESignalLIV = new TH2D("fHdNdESignalLIV","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+  fHdNdESignalLIV->SetDirectory(0);
+  fHdNdESignalLIV->SetXTitle("t [s]");
+  fHdNdESignalLIV->SetYTitle("log_{10}(E [GeV])");
+  fHdNdESignalLIV->SetZTitle("dN/dE [GeV^{-1}]");
+  //cout << "mem leak 1.3" << endl;
 
   // Delete existing fHdNdEpSignal and fHdNdEpSignalOff 
   if(fHdNdEpSignal)
@@ -1040,11 +1092,15 @@ Int_t IactUnbinnedLivLkl::ResetdNdESignal()
 //
 Int_t IactUnbinnedLivLkl::SetdNdESignalFunction(TString function,Float_t p0,Float_t p1,Float_t p2,Float_t p3,Float_t p4,Float_t p5,Float_t p6,Float_t p7,Float_t p8,Float_t p9)
 {
-  // Delete existing fHdNdESignal and create empty one
+  // Delete existing fHdNdESignalLIV and create empty one
+  //cout << "mem leak 1" << endl;
   ResetdNdESignal();
+  //cout << "mem leak 2" << endl;
 
   // call to add the function
+  //cout << "mem leak 3" << endl;
   AdddNdESignalFunction(function,p0,p1,p2,p3,p4,p5,p6,p7,p8,p9);
+  //cout << "mem leak 4" << endl;
 
   // exit
   return 0;
@@ -1083,9 +1139,22 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
   fFineLEMin=TMath::Log10(p0);
   fFineLEMax=TMath::Log10(p1);
 
-  fHdNdESignal = new TH2D("fHdNdESignal","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+  // Delete existing fHdNdESignalLIV and create empty one
+  if(fHdNdESignalLIV)
+    delete fHdNdESignalLIV;
 
-  fHdNdEBkg = new TH2D("fHdNdEpBkg","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+  fHdNdESignalLIV = new TH2D("fHdNdESignalLIV","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+
+  //cout << "mem 3.1.1" << endl;
+  //if(fHdNdEBkg)  delete fHdNdEBkg;
+  if(fHdNdEBkg)  cout << "I exist" << endl;
+  //cout << "mem 3.1.2" << endl;
+
+  //fHdNdEBkg=NULL;
+  //cout << "mem 3.1" << endl;
+  //if(!fHdNdEBkg)
+    //fHdNdEBkg = new TH2D("fHdNdEBkg","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+  //cout << "mem 3.2" << endl;
 
   Double_t Emin=p0;
   Double_t Emax=p1;
@@ -1098,39 +1167,40 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
 
   Int_t jbinmin = fNFineLEBins*(log10Emin-fFineLEMin)/(fFineLEMax-fFineLEMin);
   Int_t jbinmax = fNFineLEBins*(log10Emax-fFineLEMin)/(fFineLEMax-fFineLEMin);
-  Double_t realEmin;//  = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbinmin+1));
-  Double_t realEmax;//  = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbinmax+1)+fHdNdESignal->GetYaxis()->GetBinWidth(jbinmax+1));
+  Double_t realEmin;//  = TMath::Power(10,fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbinmin+1));
+  Double_t realEmax;//  = TMath::Power(10,fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbinmax+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(jbinmax+1));
   Double_t dE;//        = realEmax-realEmin;
   Double_t E;//        = realEmax-realEmin;
 
   Int_t ibinmin = fNFineTBins*(Tmin-fFineTMin)/(fFineTMax-fFineTMin);
   Int_t ibinmax = fNFineTBins*(Tmax-fFineTMin)/(fFineTMax-fFineTMin);
-  Double_t realTmin;//  = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibinmin+1);
-  Double_t realTmax;//  = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibinmax+1)+fHdNdESignal->GetYaxis()->GetBinWidth(ibinmax+1);
+  Double_t realTmin;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmin+1);
+  Double_t realTmax;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmax+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(ibinmax+1);
   Double_t dt;//        = realTmax-realTmin;
   Double_t t;//        = realTmax-realTmin;
 
       for(Int_t ibin=ibinmin;ibin<=ibinmax;ibin++)
         {
-              realTmin = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibin+1);
-	      realTmax = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibin+1)+fHdNdESignal->GetXaxis()->GetBinWidth(ibin+1);
+              realTmin = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibin+1);
+	      realTmax = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibin+1)+fHdNdESignalLIV->GetXaxis()->GetBinWidth(ibin+1);
 	      dt = realTmax-realTmin;
 	      t = (realTmax+realTmin)/2.;
           for(Int_t jbin=jbinmin;jbin<=jbinmax;jbin++)
             {
-              realEmin = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbin+1));
-	      realEmax = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbin+1)+fHdNdESignal->GetYaxis()->GetBinWidth(jbin+1));
+              realEmin = TMath::Power(10,fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbin+1));
+	      realEmax = TMath::Power(10,fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbin+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(jbin+1));
 	      dE = realEmax-realEmin;
 	      E = (realEmax+realEmin)/2.;
 
 	      Double_t dE_model = (TMath::Power(realEmax,-1.5) - TMath::Power(realEmin,-1.5))/-1.5;
-              fHdNdEBkg->SetBinContent(ibin+1,jbin+1,TMath::Power(E,-1.5));
-	      fHdNdESignal->SetBinContent(ibin+1,jbin+1,dE_model*(1+eta));
+  	      //if(!fHdNdEBkg)
+                //fHdNdEBkg->SetBinContent(ibin+1,jbin+1,TMath::Power(E,-1.5));
+	      fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,dE_model*(1+eta));
 	    }
 	}
 
-  if (fHdNdESignal->Integral()>0.) fHdNdESignal->Scale(1./fHdNdESignal->Integral());
-  if (fHdNdEBkg->Integral()>0.) fHdNdEBkg->Scale(1./fHdNdEBkg->Integral());
+  if (fHdNdESignalLIV->Integral()>0.) fHdNdESignalLIV->Scale(1./fHdNdESignalLIV->Integral());
+  //if (fHdNdEBkg->Integral()>0.) fHdNdEBkg->Scale(1./fHdNdEBkg->Integral());
 
   CheckHistograms(kTRUE);
 
@@ -1144,13 +1214,13 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
 
   //cout << "n_t = " << fNFineTBins << " tmin = " << fFineTMin << "tmax = " << fFineTMax << "n_e = " << fNFineLEBins << " emin = " << fFineLEMin << " emax = " << fFineLEMax << endl;
 
-  //fHdNdESignal = new TH2D("fHdNdESignal","dN/dE vs t for signal events",fNFineTBins,0.,1500.,fNFineLEBins,fFineLEMin,fFineLEMax);
-  // good !!! fHdNdESignal = new TH2D("fHdNdESignal","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
-  //fHdNdESignal = new TH2D("fHdNdESignal","dN/dE vs t for signal events",fNFineTBins,1.,1600.,fNFineLEBins,fFineLEMin,fFineLEMax);
-  fHdNdESignal = new TH2D("fHdNdESignal","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+  //fHdNdESignalLIV = new TH2D("fHdNdESignalLIV","dN/dE vs t for signal events",fNFineTBins,0.,1500.,fNFineLEBins,fFineLEMin,fFineLEMax);
+  // good !!! fHdNdESignalLIV = new TH2D("fHdNdESignalLIV","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+  //fHdNdESignalLIV = new TH2D("fHdNdESignalLIV","dN/dE vs t for signal events",fNFineTBins,1.,1600.,fNFineLEBins,fFineLEMin,fFineLEMax);
+  fHdNdESignalLIV = new TH2D("fHdNdESignalLIV","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
 
   //fHdNdEpBkg = new TH2D("fHdNdEpBkg","dN/dE vs t for signal events",fNFineTBins,1.,1600.,fNFineLEBins,fFineLEMin,fFineLEMax);
-  fHdNdEBkg = new TH2D("fHdNdEpBkg","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
+  // old ok fHdNdEBkg = new TH2D("fHdNdEpBkg","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
   /*const Float_t*      offSample       = GetOffSample();
   const Double_t*     offSampleTime   = GetOffSampleTime();
   UInt_t              Noff            = GetNoff();
@@ -1176,15 +1246,15 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
 
       Int_t jbinmin = fNFineLEBins*(log10Emin-fFineLEMin)/(fFineLEMax-fFineLEMin);
       Int_t jbinmax = fNFineLEBins*(log10Emax-fFineLEMin)/(fFineLEMax-fFineLEMin);
-      Double_t realEmin;//  = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbinmin+1));
-      Double_t realEmax;//  = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbinmax+1)+fHdNdESignal->GetYaxis()->GetBinWidth(jbinmax+1));
+      Double_t realEmin;//  = TMath::Power(10,fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbinmin+1));
+      Double_t realEmax;//  = TMath::Power(10,fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbinmax+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(jbinmax+1));
       Double_t dE;//        = realEmax-realEmin;
       Double_t E;//        = realEmax-realEmin;
 
       Int_t ibinmin = fNFineTBins*(Tmin-fFineTMin)/(fFineTMax-fFineTMin);
       Int_t ibinmax = fNFineTBins*(Tmax-fFineTMin)/(fFineTMax-fFineTMin);
-      Double_t realTmin;//  = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibinmin+1);
-      Double_t realTmax;//  = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibinmax+1)+fHdNdESignal->GetYaxis()->GetBinWidth(ibinmax+1);
+      Double_t realTmin;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmin+1);
+      Double_t realTmax;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmax+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(ibinmax+1);
       Double_t dt;//        = realTmax-realTmin;
       Double_t t;//        = realTmax-realTmin;*/
 
@@ -1193,8 +1263,8 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
 
       for(Int_t ibin=ibinmin;ibin<=ibinmax;ibin++)
         {
-              realTmin = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibin+1);
-	      realTmax = fHdNdESignal->GetXaxis()->GetBinLowEdge(ibin+1)+fHdNdESignal->GetXaxis()->GetBinWidth(ibin+1);
+              realTmin = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibin+1);
+	      realTmax = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibin+1)+fHdNdESignalLIV->GetXaxis()->GetBinWidth(ibin+1);
 	      dt = realTmax-realTmin;
 	      t = (realTmax+realTmin)/2.;
 	      //cout << "t = " << t << endl;
@@ -1202,8 +1272,8 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
 	      Double_t constant_2 = TMath::Power(realTmax,7.3-1.3*TMath::Log(realTmax))*TMath::Power(realTmax,beta);
           for(Int_t jbin=jbinmin;jbin<=jbinmax;jbin++)
             {
-              realEmin = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbin+1));
-	      realEmax = TMath::Power(10,fHdNdESignal->GetYaxis()->GetBinLowEdge(jbin+1)+fHdNdESignal->GetYaxis()->GetBinWidth(jbin+1));
+              realEmin = TMath::Power(10,fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbin+1));
+	      realEmax = TMath::Power(10,fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbin+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(jbin+1));
 	      dE = realEmax-realEmin;
 	      E = (realEmax+realEmin)/2.;
 	      //Double_t dE_model = (TMath::Power(realEmax,-5.43) - TMath::Power(realEmin,-5.43))/-5.43;
@@ -1220,15 +1290,15 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
                   if(t-0.017*eta*E < T_0)
 		    {
 		      //cout << " case 1 t = " << t << " and E = " << E << endl;
-	              fHdNdESignal->SetBinContent(ibin+1,jbin+1,/*fHdNdESignal->GetBinContent(ibin+1,jbin+1)*/+0.);
+	              fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,/*fHdNdESignalLIV->GetBinContent(ibin+1,jbin+1)*/+0.);
 		    }
 		  else
 	            {
 			    if(TMath::Power(t,7.3-1.3*TMath::Log(t)) <0.) cout << "part 1 = " << TMath::Power(E,-alpha) << " part 2 = " << TMath::Power(t,7.3-1.3*TMath::Log(t)) << endl;
-			    //fHdNdESignal->SetBinContent(ibin+1,jbin+1,/*fHdNdESignal->GetBinContent(ibin+1,jbin+1)*/ + TMath::Power(E,-alpha)*TMath::Power(t,7.3-1.3*TMath::Log(t)) );
-			    // good!! fHdNdESignal->SetBinContent(ibin+1,jbin+1,/*fHdNdESignal->GetBinContent(ibin+1,jbin+1)*/ + TMath::Power(E,-alpha)*TMath::Power(t,7.3-1.3*TMath::Log(t)) );
-			    //fHdNdESignal->SetBinContent(ibin+1,jbin+1,/*fHdNdESignal->GetBinContent(ibin+1,jbin+1)*/ + (TMath::Power(realEmax,-alpha+1)/(-alpha+1) + TMath::Power(realEmin,-alpha+1)/(-alpha+1))*(realTmax-realTmin)*(constant_2+constant_1)/2.);
-		            fHdNdESignal->SetBinContent(ibin+1,jbin+1,/*fHdNdESignal->GetBinContent(ibin+1,jbin+1)*/ + 1.*dE_model/*(1./dE)*(1./dt)*/);
+			    //fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,/*fHdNdESignalLIV->GetBinContent(ibin+1,jbin+1)*/ + TMath::Power(E,-alpha)*TMath::Power(t,7.3-1.3*TMath::Log(t)) );
+			    // good!! fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,/*fHdNdESignalLIV->GetBinContent(ibin+1,jbin+1)*/ + TMath::Power(E,-alpha)*TMath::Power(t,7.3-1.3*TMath::Log(t)) );
+			    //fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,/*fHdNdESignalLIV->GetBinContent(ibin+1,jbin+1)*/ + (TMath::Power(realEmax,-alpha+1)/(-alpha+1) + TMath::Power(realEmin,-alpha+1)/(-alpha+1))*(realTmax-realTmin)*(constant_2+constant_1)/2.);
+		            fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,/*fHdNdESignalLIV->GetBinContent(ibin+1,jbin+1)*/ + 1.*dE_model/*(1./dE)*(1./dt)*/);
 			    //cout << "dE=" << dE << " and dT=" << dt << " and dE*dT=" << (1./dE)*(1./dt) << endl;
 		    }
                 }
@@ -1236,21 +1306,21 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
                {
 		      //cout << " case 3 t = " << t << " and E = " << E << " and val = " << (TMath::Power(realEmax,-alpha+1)/(-alpha+1) + TMath::Power(realEmin,-alpha+1)/(-alpha+1)) << " val2 = " << constant << " val3 = " << (TMath::Power(realTmax,-beta+1)/(-beta+1) + TMath::Power(realTmin,-beta+1)/(-beta+1)) << endl;
 		 //if(realTmin < 0.1) realTmin=1.;
-		 if(realTmin < 0.1) fHdNdESignal->SetBinContent(ibin+1,jbin+1,/*fHdNdESignal->GetBinContent(ibin+1,jbin+1)*/ + 0.);
-	 	 //else fHdNdESignal->SetBinContent(ibin+1,jbin+1,/*fHdNdESignal->GetBinContent(ibin+1,jbin+1)*/ + (TMath::Power(realEmax,-alpha+1)/(-alpha+1) + TMath::Power(realEmin,-alpha+1)/(-alpha+1))*constant*(TMath::Power(realTmax,-beta+1)/(-beta+1) + TMath::Power(realTmin,-beta+1)/(-beta+1)) );
-	 	 // good!! fHdNdESignal->SetBinContent(ibin+1,jbin+1,/*fHdNdESignal->GetBinContent(ibin+1,jbin+1)*/ + (TMath::Power(E,-alpha))*constant*(TMath::Power(t,-beta)) );
-		 fHdNdESignal->SetBinContent(ibin+1,jbin+1,/*fHdNdESignal->GetBinContent(ibin+1,jbin+1)*/ + 1.*dE_model/*(1./dE)*(1./dt)*/);
+		 if(realTmin < 0.1) fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,/*fHdNdESignalLIV->GetBinContent(ibin+1,jbin+1)*/ + 0.);
+	 	 //else fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,/*fHdNdESignalLIV->GetBinContent(ibin+1,jbin+1)*/ + (TMath::Power(realEmax,-alpha+1)/(-alpha+1) + TMath::Power(realEmin,-alpha+1)/(-alpha+1))*constant*(TMath::Power(realTmax,-beta+1)/(-beta+1) + TMath::Power(realTmin,-beta+1)/(-beta+1)) );
+	 	 // good!! fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,/*fHdNdESignalLIV->GetBinContent(ibin+1,jbin+1)*/ + (TMath::Power(E,-alpha))*constant*(TMath::Power(t,-beta)) );
+		 fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,/*fHdNdESignalLIV->GetBinContent(ibin+1,jbin+1)*/ + 1.*dE_model/*(1./dE)*(1./dt)*/);
 			    //cout << "dE=" << dE << " and dT=" << dt << " and dE*dT=" << (1./dE)*(1./dt) << endl;
                }
             }
         }
 
-//cout << "int = " << fHdNdESignal->Integral() << endl;
-if (fHdNdESignal->Integral()>0.) fHdNdESignal->Scale(1./fHdNdESignal->Integral());
-//if (fHdNdESignal->Integral()>0. && !firstTime) {fHdNdESignal->Scale(1./integralFirstTime); cout << " NOT FIIIIIRST" << endl;}
-//else if (fHdNdESignal->Integral()>0.) {fHdNdESignal->Scale(1./fHdNdESignal->Integral()); firstTime=kFALSE; integralFirstTime=fHdNdESignal->Integral(); cout << "first time!" << endl;}
-//fHdNdESignal->SaveAs("bkg10.root");
-//cout << "int = " << fHdNdESignal->Integral() << endl;
+//cout << "int = " << fHdNdESignalLIV->Integral() << endl;
+if (fHdNdESignalLIV->Integral()>0.) fHdNdESignalLIV->Scale(1./fHdNdESignalLIV->Integral());
+//if (fHdNdESignalLIV->Integral()>0. && !firstTime) {fHdNdESignalLIV->Scale(1./integralFirstTime); cout << " NOT FIIIIIRST" << endl;}
+//else if (fHdNdESignalLIV->Integral()>0.) {fHdNdESignalLIV->Scale(1./fHdNdESignalLIV->Integral()); firstTime=kFALSE; integralFirstTime=fHdNdESignalLIV->Integral(); cout << "first time!" << endl;}
+//fHdNdESignalLIV->SaveAs("bkg10.root");
+//cout << "int = " << fHdNdESignalLIV->Integral() << endl;
 if (fHdNdEBkg->Integral()>0.) fHdNdEBkg->Scale(1./fHdNdEBkg->Integral());
 
 if(p9>0.1)
@@ -1259,7 +1329,7 @@ Double_t Erdm, Trdm;
 fOnSampleEnergy  = new Double_t[GetNon()];
 for (int test=0;test<GetNon();test++)
   {
-    fHdNdESignal->GetRandom2(Trdm,Erdm);
+    fHdNdESignalLIV->GetRandom2(Trdm,Erdm);
     fOnSampleEnergy[test]=Erdm;
     fOnSampleTime[test]=Trdm/*+0.017*eta*Erdm*/;
     cout << "i = " << test << " and Trdm = " << Trdm << " and Erdm = " << Erdm << endl;
@@ -1287,11 +1357,11 @@ CheckHistograms(kTRUE);
       f1->SetNpx(10000);
       Double_t E2 = 0.;
    
-      fHdNdESignal = new TH2D();//"fHdNdESignal","fHdNdESignal",fNTimeBins,(1)*(90./nevents),(nevents)*(90./nevents),fNEnergyBins,GetEmin()/1000.,GetEmax()/1000.);
+      fHdNdESignalLIV = new TH2D();//"fHdNdESignalLIV","fHdNdESignalLIV",fNTimeBins,(1)*(90./nevents),(nevents)*(90./nevents),fNEnergyBins,GetEmin()/1000.,GetEmax()/1000.);
       for (int i=0; i<nevents; i++)
         {
           E2 = f1->GetRandom();
-          fHdNdESignal->Fill((i+1)*(90./nevents),E2);
+          fHdNdESignalLIV->Fill((i+1)*(90./nevents),E2);
         }
       TCanvas *c1 = new TCanvas("c1","c1",900,300);
       c1->Divide(3,3);
@@ -1302,7 +1372,7 @@ CheckHistograms(kTRUE);
       c1->cd(4);
       //fHNOff->Draw("COLZ");
       c1->cd(5);
-      fHdNdESignal->Draw("COLZ");
+      fHdNdESignalLIV->Draw("COLZ");
       c1->cd(6);
       c1->cd(7);
       c1->cd(8);
@@ -1347,7 +1417,7 @@ CheckHistograms(kTRUE);
   //TH2D *h5 = new TH2D("h5","E vs Random Distribution from GetRandom() + LIV shift",50,Tmin,Tmax,20,Emin,Emax);
   //fHNOn = new TH2I("fHNOn","fHNOn",6,Tmin,Tmax,6,Emin,Emax);
   //fHNOff = new TH2I("fHNOff","fHNOff",6,Tmin,Tmax,6,Emin,Emax);
-  fHdNdESignal = new TH2D("fHdNdESignal","fHdNdESignal",6,Tmin,Tmax,6,Emin,Emax);
+  fHdNdESignalLIV = new TH2D("fHdNdESignalLIV","fHdNdESignalLIV",6,Tmin,Tmax,6,Emin,Emax);
   //fNFineTBins=6, fFineTMin=Tmin,fFineTMax=Tmax,fNFineLEBins=6,fFineLEMin=Emin,fFineLEMax=Emax;
   //fNTimeBins=6,fNEnergyBins=6;
   //fUnitsOfG = (Tmax-Tmin)*(Emax-Emin);
@@ -1367,8 +1437,8 @@ CheckHistograms(kTRUE);
       h3->Fill(t_shifted);
       h4->Fill(t,E);
       h5->Fill(t_shifted,E);
-      //fHdNdESignal->Fill(t,E);
-      fHdNdESignal->Fill(t_shifted,E2);
+      //fHdNdESignalLIV->Fill(t,E);
+      fHdNdESignalLIV->Fill(t_shifted,E2);
       //fHdNdEpSignal->Fill(t_shifted2,E3);
       //fHNOn->Fill(t_shifted,E2);
       //fHNOff->Fill(t,E);
@@ -1389,7 +1459,7 @@ CheckHistograms(kTRUE);
   c1->cd(6);
   h3->Draw();
   c1->cd(7);
-  fHdNdESignal->Draw("COLZ");
+  fHdNdESignalLIV->Draw("COLZ");
   c1->cd(8);
   h4->Draw("COLZ");
   c1->cd(9);
@@ -1416,7 +1486,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   fpar*=1;
   iflag*=1;
 
-Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
+  /*Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
   Double_t boundaries[30+1];
   boundaries[0] = 5.;
   for (int i = 1 ; i < 30 ; i++){
@@ -1437,16 +1507,16 @@ Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
 //ST0310
 //cout << (1.68368e+00)+(-7.95249e-01)*energ+(9.82831e-02)*energ*energ << "   " ;
 //ST0311
-//cout << /*energ << "   " <<*/ (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*energ*energ << ",   " ;
-  }
+//cout << energ << "   " << (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*energ*energ << ",   " ;
+  }*/
 
 
   Double_t x[101], y[101];
   //Double_t eta_inject = 1.;
 
   IactUnbinnedLivLkl* mylkl           = dynamic_cast<IactUnbinnedLivLkl*>(minuit->GetObjectFit());
-  Double_t old_lkl[mylkl->GetNon()];
-  Double_t new_lkl[mylkl->GetNon()];
+  //Double_t old_lkl[mylkl->GetNon()];
+  //Double_t new_lkl[mylkl->GetNon()];
 
   const Float_t*      onSample        = mylkl->GetOnSample();
   //const Double_t*      onSample        = mylkl->GetOnSampleEnergy();
@@ -1459,7 +1529,7 @@ Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
   //Float_t             tau             = 3.;
   Float_t             tau             = 1.;
   Float_t             dTau            = mylkl->GetDTau();
-  Int_t              eta             = par[0];
+  Double_t              eta             = par[0];
   cout << "ETA = " << eta << " is it changing?" << endl;
 
   Double_t realEmin=2000.;
@@ -1470,12 +1540,13 @@ Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
       if(onSample[i]<realEmin) realEmin = onSample[i];
     }
 
-    //cout << "Emin = " << realEmin << " Emax = " << realEmax << endl;
+    cout << "Emin = " << realEmin << " Emax = " << realEmax << endl;
+    cout << "Tmin = " << onSampleTime[0] << " Tmax = " << onSampleTime[Non-1] << endl;
 
   //mylkl->SetdNdESignalFunction("",250.,2000.,0.,1200.,eta_inject,2.4,1.5,1.,30.,0.111);
   //mylkl->SetdNdESignalFunction("",300.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
   //mylkl->SetdNdESignalFunction("",100.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
-  mylkl->SetdNdESignalFunction("",100.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta); // skipped < 300 GeV --> Non-2
+  mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-1],eta); // skipped < 300 GeV --> Non-2
   //mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],0.,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
   // for all events mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-1],0.,2.4,1.5,1.,30.,0.);
   //mylkl->SetdNdESignalFunction("",250.,2000.,62.,1225.,0.,2.4,1.5,1.,30.,0.);	
@@ -1513,19 +1584,25 @@ Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
   const Double_t   xmin            = hdNdEpSignal->GetYaxis()->GetXmin();
   const Double_t   xmax            = hdNdEpSignal->GetYaxis()->GetXmax();
 
+  cout << "xmin = " << xmin << " xmax = " << xmax << " tmin = " << tmin << " tmax = " << tmax << endl;
+
   // Estimated number of background events in signal and background regions
-  Double_t g       = mylkl->GetdNdEpSignalIntegral();///1000000.;//par[0]; //GetG();
-  g       = Non; //g*Non;
+  //Double_t g       = mylkl->GetdNdEpSignalIntegral();///1000000.;//par[0]; //GetG();
+  Double_t g       = Non; //g*Non;
   //Double_t g       = hdNdEpSignal->GetBinContent(0);//par[0]; //GetG();
   //Double_t b       = (Non + Noff - (1.+tau)*g + TMath::Sqrt(TMath::Power(Non + Noff - (1.+tau)*g,2) + 4.*(1.+tau)*Noff*g))/(2.*(1.+tau));   //par[1]; 
   //Double_t b       = Noff;
-  Double_t b       = Noff/tau;
+  //Double_t b       = Noff/tau;
   //cout << "g = " << g << " and b = " << b << endl;
   //Double_t tauest  = par[2];
   //Double_t boff    = b*tauest;
-  Double_t boff    = b*tau;
-  Double_t fnorm   = g+b+boff;
+  //Double_t boff    = b*tau;
+  //Double_t fnorm   = g+b+boff;
+  //Double_t fnorm   = g+b;
+  Double_t fnorm   = g;
   //Double_t fnorm   = 726;
+
+  cout << "Non = " << Non << " g = " << g << " fnorm = " << fnorm << endl;
 
   // sum signal and background contributions and normalize resulting pdf (On + Off)
   TH2D* hdNdEpOn  = new TH2D("hdNdEpOn", "On  event rate vs E' vs t",nbinsT,tmin,tmax,nbins,xmin,xmax);
@@ -1533,9 +1610,10 @@ Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,g/(g+b),g/(g+b));
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,1./2.,1./2.);
   //hdNdEpOn->Add(hdNdEpSignal,(Non-b)/Non);
-  hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(Non-b),b);
+  //hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(Non-b),b);
+  hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,Non/2.,Non/2.);
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(726-119/3.),119/3.);
-  hdNdEpOn->SaveAs("./template_test.root");
+  //hdNdEpOn->SaveAs("./template_test.root");
 
   // normalize
   if(fnorm>0)
@@ -1546,7 +1624,7 @@ Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
   //hdNdEpOn->SaveAs("./hdNdEpOn.root");
   TH2D* hdNdEpOff = new TH2D("hdNdEpOff","Off event rate vs E' vs t",nbinsT,tmin,tmax,nbins,xmin,xmax);
   hdNdEpOff->Reset();
-  hdNdEpOff->Add(hdNdEpBkg,b/Non);
+  //hdNdEpOff->Add(hdNdEpBkg,b/Non);
 
   /*// normalize
   if(fnorm>0)
@@ -1563,12 +1641,12 @@ Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
   for(ULong_t ievent=0; ievent<Non; ievent++)
     {
 	    //if (onSample[ievent] < 2.477) {skipped++; /*cout << "SKIPPED " << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl;*/ continue;}
-	    if (onSample[ievent] < 2.) {skipped++; /*cout << "SKIPPED " << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl;*/ continue;}
+	    //if (onSample[ievent] < 2.) {skipped++; /*cout << "SKIPPED " << std::setprecision(6) << TMath::Power(10.,onSample[ievent]) << " " << onSampleTime[ievent] << endl;*/ continue;}
 	    //if (onSample[ievent] > 3.) continue;
-      cout << std::setprecision(6) << "E = " << TMath::Power(10.,onSample[ievent]) << ", t = " << onSampleTime[ievent] << endl; 
-      Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
+	    Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
       //Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]-0.000025*eta*TMath::Power(10.,onSample[ievent])*TMath::Power(10.,onSample[ievent]),onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
-      cout << "lkl val = " << val << endl;
+	    // ok!!! cout << std::setprecision(6) << "E = " << TMath::Power(10.,onSample[ievent]) << ", t = " << onSampleTime[ievent] << " val = " << val << endl; 
+      	    //cout << "lkl val = " << val << endl;
       if(val>0)
 	{
           f += -2*TMath::Log(val);
@@ -1587,8 +1665,8 @@ Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
 	{
 	  //cout << "Why 0? i = " << ievent << " bin = " << hdNdEpOn->FindBin(onSampleTime[ievent],onSample[ievent]) << " E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << " and log = " << val << endl;
         //f += 100.;
-        //f += 5000.;
-          f += 1e99;
+        f += 5000.;
+          //f += 1e99;
 	}
     }
 
