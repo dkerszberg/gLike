@@ -252,8 +252,6 @@ Double_t Lkl::ComputeLklVsG(Bool_t centerAtZero,Int_t npoints,Double_t glow,Doub
       FindGLowAndGUpp(glow,gupp,centerAtZero);
     }
 
-  cout << "WE PASSED THE MINIMIZING STEP" << endl;
- 
   // expansion of glow and gupp from daughter likelihoods
   expCoeff = GetExpansionCoefficient();
   // expansion of glow and gupp from uncertainties in units of G
