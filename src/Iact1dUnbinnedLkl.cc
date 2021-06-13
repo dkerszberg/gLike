@@ -399,8 +399,10 @@ void Iact1dUnbinnedLkl::SetFunctionAndPars(Double_t ginit)
 {
   fMinuit->SetFCN(fullLkl);
   fMinuit->SetName(Form("%s_Minuit",GetName()));
-  Double_t pStart[gNPars] = {ginit, fEventsInEnergyWindow/fTau, fTau};
-  Double_t pDelta[gNPars] = {TMath::Sqrt(fEventsInEnergyWindow)/10.,TMath::Sqrt(fEventsInEnergyWindow)/10.,fDTau/10.};    // Precision of parameters during minimization
+  //Double_t pStart[gNPars] = {ginit, fEventsInEnergyWindow/fTau, fTau};
+    Double_t pStart[gNPars] = {0., fEventsInEnergyWindow/fTau, fTau};
+  //Double_t pDelta[gNPars] = {TMath::Sqrt(fEventsInEnergyWindow)/10.,TMath::Sqrt(fEventsInEnergyWindow)/10.,fDTau/10.};
+    Double_t pDelta[gNPars] = {TMath::Sqrt(fEventsInEnergyWindow)/10.,TMath::Sqrt(fEventsInEnergyWindow)/10.,fDTau/10.};    // Precision of parameters during minimization
 
   SetParameters(gParName,pStart,pDelta);
 
@@ -473,6 +475,8 @@ Int_t Iact1dUnbinnedLkl::CheckHistograms(Bool_t checkdNdEpBkg)
       fHdNdEpSignal->SetDirectory(0);
 
       // smear hdNdESignalAeff
+      SmearHistogram(hdNdESignalAeff,fHdNdEpSignal,fGEreso,fGEbias);
+      /*
       if(fMigMatrix)
 	{
 	  if(SmearHistogram(hdNdESignalAeff,fHdNdEpSignal,fMigMatrix))
@@ -483,7 +487,7 @@ Int_t Iact1dUnbinnedLkl::CheckHistograms(Bool_t checkdNdEpBkg)
 	  if(SmearHistogram(hdNdESignalAeff,fHdNdEpSignal,fGEreso,fGEbias))
 	    return 1;
 	}	    
-
+*/
       cout << "Done! " << endl;
       // clean
       delete hdNdESignalAeff;
@@ -1167,6 +1171,7 @@ Int_t Iact1dUnbinnedLkl::ComputeBkgModelFromOnHisto()
           }
         }
       fEventsInEnergyWindow=count;
+      cout<<"fEventsInEnergyWindow = "<<fEventsInEnergyWindow<<endl;
 }
   
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
