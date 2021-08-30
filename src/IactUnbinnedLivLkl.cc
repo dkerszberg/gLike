@@ -147,12 +147,12 @@ static const Int_t    gNPars           = 1;                      // Number of fr
 static const Char_t*  gParName[gNPars] = {"eta"};                // Name of parameters
 static const Int_t    gNBins           = 1000;                    // default number of histograms for dN/dE plots
 
-static const Int_t    gNFineLEBins       = 100;                   // default number of fine bins for internal histos
+static const Int_t    gNFineLEBins       = 5000;                   // default number of fine bins for internal histos
 static const Double_t gFineLEMin       = TMath::Log10(10);       // default minimum log(energy[GeV]) for internal histos
 static const Double_t gFineLEMax       = TMath::Log10(1000000);   // default maximum log(energy[GeV]) for internal histos
-static const Int_t    gNFineTBins       = 100;                   // default number of fine bins for internal histos
+static const Int_t    gNFineTBins       = 5000;                   // default number of fine bins for internal histos
 static const Float_t  gFineTMin  = 0;//1e01;                   // [s] default value of minimum arrival time
-static const Float_t  gFineTMax  = 1.5e02;//1e03;                   // [s] default value of maximum arrival time
+static const Float_t  gFineTMax  = 2.e05;//1e03;                   // [s] default value of maximum arrival time
 static const Double_t gCenterBin       = 0.5;                    // decide which value represents bin in histogram (= 0 for lower bin edge, 0.5 for the middle, 1 for the right edge)
 
 // static functions (for internal processing of input data)
@@ -214,6 +214,7 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
         inputfileName=fldre[1];
     }
 
+	Double_t FirstEventTimeMJD=0.;
   // open and read input files with data and IRFs
   TFile* ifile = new TFile(path+(path==""?"":"/")+inputfileName,"READ");
   IactEventListIrf* dataSet = (IactEventListIrf*) ifile->Get("IactEventListIrf");
@@ -231,8 +232,8 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       // extract data
 
       // extract info from file 
-      fTMin = 0.;//dataSet->GetEpmin();
-      fTMax = 10.;//dataSet->GetEpmax();
+      //fTMin = 0.;//dataSet->GetEpmin();
+      //fTMax = 10.;//dataSet->GetEpmax();
 
       Double_t eventOnT,eventOffT;
       dataSet->SetOnBranchAddress("t",&eventOnT);
@@ -241,11 +242,13 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       fOnSampleTime  = new Double_t[GetNon()];
       fOffSampleTime = new Double_t[GetNoff()];
 
-      TRandom3* generator = new TRandom3();
+      //TRandom3* generator = new TRandom3();
+
 
       for(Int_t i=0;i<GetNon();i++)
         {
           dataSet->GetOnEntry(i);
+	  if(i==0) FirstEventTimeMJD = TMath::Floor(eventOnT);
 	  fOnSampleTime[i] = eventOnT*86400;
 	  /*if(i==0) fTMin = (eventOnT-58497.)*86400.;
 	  if(i==(GetNon()-1)) fTMax = (eventOnT-58497.)*86400.;
@@ -270,12 +273,21 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
 	  if(i==(GetNoff()-1)) fOffSampleTime[i]=100.;*/
         }
 
+	// should be min of (on[0] and off[0]) and same for max
       fTMin       = fOnSampleTime[0];
       fTMax       = fOnSampleTime[GetNon()-1];
       //gFineTMin   = fOnSampleTime[0];
       //gFineTMax   = fOnSampleTime[GetNon()-1]+100.;
     }
 
+      cout << "fTmin = " << fTMin << endl;
+      for(Int_t i=0;i<GetNoff();i++)
+        {
+		fOnSampleTime[i]-=FirstEventTimeMJD*86400;
+		fOffSampleTime[i]-=FirstEventTimeMJD*86400;
+	}
+      fTMin       = fOnSampleTime[0];
+      fTMax       = fOnSampleTime[GetNon()-1];
       cout << "fTmin = " << fTMin << endl;
       cout << "fTmax = " << fTMax << endl;
       cout << "fEmin = " << GetEmin() << endl;
