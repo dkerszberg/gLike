@@ -147,10 +147,10 @@ static const Int_t    gNPars           = 1;                      // Number of fr
 static const Char_t*  gParName[gNPars] = {"eta"};                // Name of parameters
 static const Int_t    gNBins           = 1000;                    // default number of histograms for dN/dE plots
 
-static const Int_t    gNFineLEBins       = 5000;                   // default number of fine bins for internal histos
+static const Int_t    gNFineLEBins       = 100;                   // default number of fine bins for internal histos
 static const Double_t gFineLEMin       = TMath::Log10(10);       // default minimum log(energy[GeV]) for internal histos
 static const Double_t gFineLEMax       = TMath::Log10(1000000);   // default maximum log(energy[GeV]) for internal histos
-static const Int_t    gNFineTBins       = 5000;                   // default number of fine bins for internal histos
+static const Int_t    gNFineTBins       = 100;                   // default number of fine bins for internal histos
 static const Float_t  gFineTMin  = 0;//1e01;                   // [s] default value of minimum arrival time
 static const Float_t  gFineTMax  = 2.e05;//1e03;                   // [s] default value of maximum arrival time
 static const Double_t gCenterBin       = 0.5;                    // decide which value represents bin in histogram (= 0 for lower bin edge, 0.5 for the middle, 1 for the right edge)
@@ -280,8 +280,9 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       //gFineTMax   = fOnSampleTime[GetNon()-1]+100.;
     }
 
+      cout << "Non = " << GetNon() << endl;
       cout << "fTmin = " << fTMin << endl;
-      for(Int_t i=0;i<GetNoff();i++)
+      for(Int_t i=0;i<GetNon();i++)
         {
 		fOnSampleTime[i]-=FirstEventTimeMJD*86400;
 		fOffSampleTime[i]-=FirstEventTimeMJD*86400;
@@ -295,11 +296,17 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       cout << "fZ = "    << fZ << endl;
       cout << "fDz = "    << fDz << endl;
       cout << "fLC = "    << fLC << endl;
+      cout << "fNFineTBins = " << fNFineTBins << endl;
+      cout << "fFineTMin = " << fFineTMin << endl;
+      cout << "fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax = " << fFineTMax << " " << fNFineLEBins << " " << fFineLEMin << " " << fFineLEMax << endl;
+      cout << "fEmax = " << GetEmax() << endl;
       //BuildAndBinOnOffHistos();
 
   //if(!fHdNdEBkg)
   fHdNdEBkg = new TH2D("fHdNdEBkg","dN/dE vs t for signal events",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
 
+      cout << "Emin = "    << GetEmin() << endl;
+      cout << "Emax = "    << GetEmax() << endl;
   //Int_t jbinmin = fNFineLEBins*(log10Emin-fFineLEMin)/(fFineLEMax-fFineLEMin);
   //Int_t jbinmax = fNFineLEBins*(log10Emax-fFineLEMin)/(fFineLEMax-fFineLEMin);
   Int_t jbinmin = fNFineLEBins*(TMath::Log10(GetEmin())-fFineLEMin)/(fFineLEMax-fFineLEMin);
