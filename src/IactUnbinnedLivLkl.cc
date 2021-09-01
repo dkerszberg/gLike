@@ -214,7 +214,8 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
         inputfileName=fldre[1];
     }
 
-	Double_t FirstEventTimeMJD=0.;
+	Double_t FirstEventTimeMJD_On=0.;
+	Double_t FirstEventTimeMJD_Off=0.;
   // open and read input files with data and IRFs
   TFile* ifile = new TFile(path+(path==""?"":"/")+inputfileName,"READ");
   IactEventListIrf* dataSet = (IactEventListIrf*) ifile->Get("IactEventListIrf");
@@ -248,8 +249,9 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       for(Int_t i=0;i<GetNon();i++)
         {
           dataSet->GetOnEntry(i);
-	  if(i==0) FirstEventTimeMJD = TMath::Floor(eventOnT);
-	  fOnSampleTime[i] = eventOnT*86400;
+	  if(i==0) FirstEventTimeMJD_On = TMath::Floor(eventOnT);
+	  fOnSampleTime[i]=(eventOnT-FirstEventTimeMJD_On)*86400;
+	  //fOnSampleTime[i] = eventOnT*86400;
 	  /*if(i==0) fTMin = (eventOnT-58497.)*86400.;
 	  if(i==(GetNon()-1)) fTMax = (eventOnT-58497.)*86400.;
 	  //cout << setprecision(20) << " on " << i << " t = " << eventOnT << "in days or " << eventOnT*86400. << " in sec" << endl;
@@ -263,7 +265,9 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       for(Int_t i=0;i<GetNoff();i++)
         {
           dataSet->GetOffEntry(i);
-	  fOffSampleTime[i] = eventOffT*86400;
+	  if(i==0) FirstEventTimeMJD_Off = TMath::Floor(eventOffT);
+	  fOffSampleTime[i]=(eventOffT-FirstEventTimeMJD_Off)*86400;	  
+	  //fOffSampleTime[i] = eventOffT*86400;
 	  //cout << setprecision(20) << " off " << i << " t = " << eventOffT << endl;
           /*fOffSampleTime[i] = (eventOffT-58497.)*24.*60.*60. - fTMin + 62.1;
 	  if(fOffSampleTime[i]==-1) fOffSampleTime[i] = (i+1.5)*(90./GetNon());
@@ -282,11 +286,19 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
 
       cout << "Non = " << GetNon() << endl;
       cout << "fTmin = " << fTMin << endl;
-      for(Int_t i=0;i<GetNon();i++)
+     /* for(Int_t i=0;i<GetNon();i++)
         {
-		fOnSampleTime[i]-=FirstEventTimeMJD*86400;
-		fOffSampleTime[i]-=FirstEventTimeMJD*86400;
+		fOnSampleTime[i]-=FirstEventTimeMJD_On*86400;
+		//cout <<i<<","<<fOnSampleTime[i] << endl;
+
 	}
+*/
+  /*    for(Int_t i=0;i<GetNoff();i++)
+        {
+		fOffSampleTime[i]-=FirstEventTimeMJD_Off*86400;
+		//cout <<i<<","<<fOffSampleTime[i] << endl;
+	}
+*/
       fTMin       = fOnSampleTime[0];
       fTMax       = fOnSampleTime[GetNon()-1];
       cout << "fTmin = " << fTMin << endl;
