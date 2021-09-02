@@ -141,23 +141,34 @@ void processSample(TString inputFileName,TString outputFileName)
 
   TRandom2 *rand =new TRandom2(3);
   vector<double> vect_on;
+  vector<double> vect_on_E;
   vector<double> vect_off;
 
   // read event data from old class and write it in new class
   IactEventListIrf*  newclass = new IactEventListIrf;
   
-  UInt_t non = 5000;//oldclass->GetOnSample()->GetEntries();
+  UInt_t non = 2000;//oldclass->GetOnSample()->GetEntries();
   for(UInt_t ion=0;ion<non;ion++)
     {
       myT = rand->Gaus(600,150)/86400. + 50000;
       vect_on.push_back(myT);
+      myE = 10000*TMath::Power(rand->Uniform(1,10),-2);
+      vect_on_E.push_back(myE);
+    }
+  UInt_t non_2 = 3000;//oldclass->GetOnSample()->GetEntries();
+  for(UInt_t ion=0;ion<non_2;ion++)
+    {
+      myT = rand->Uniform(50,1150)/86400. + 50000;
+      vect_on.push_back(myT);
+      myE = 10000*TMath::Power(rand->Uniform(1,10),-2.7);
+      vect_on_E.push_back(myE);
     }
   sort(vect_on.begin(),vect_on.end());
-  for(UInt_t ion=0;ion<non;ion++)
+  for(UInt_t ion=0;ion<non+non_2;ion++)
     {
       oldclass->GetOnEntry(ion);
       myT = vect_on[ion]; //rand->Gaus(600,150)/86400. + 50000;
-      myE = 10000*TMath::Power(rand->Uniform(1,10),-2);
+      myE = vect_on_E[ion]; //rand->Gaus(600,150)/86400. + 50000;
       newclass->FillOnEvent(myE,IactEventListIrf::gDefRADECVal,IactEventListIrf::gDefRADECVal,eventOn.dRA,eventOn.dDEC,myT,eventOn.had);
     }
 
