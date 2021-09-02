@@ -645,7 +645,7 @@ Double_t Lkl::CallMinimization(Double_t g,Bool_t isVerbose,Int_t strategy)
   arglist[0] = 10000;
   iflag = -1;
   Int_t counter = 0;
-  const Int_t maxcounts = 10;
+  const Int_t maxcounts = 300;
 
   // try until convergence is achieved
   while((iflag!=0 || TMath::IsNaN(GetParErr(0))) && counter<maxcounts) // try until the fit converges

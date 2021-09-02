@@ -1592,7 +1592,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   }*/
 
 
-  Double_t x[101], y[101];
+  //Double_t x[101], y[101];
   //Double_t eta_inject = 1.;
 
   IactUnbinnedLivLkl* mylkl           = dynamic_cast<IactUnbinnedLivLkl*>(minuit->GetObjectFit());
@@ -1677,7 +1677,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   //Double_t g       = hdNdEpSignal->GetBinContent(0);//par[0]; //GetG();
   //Double_t b       = (Non + Noff - (1.+tau)*g + TMath::Sqrt(TMath::Power(Non + Noff - (1.+tau)*g,2) + 4.*(1.+tau)*Noff*g))/(2.*(1.+tau));   //par[1]; 
   //Double_t b       = Noff;
-  //Double_t b       = Noff/tau;
+  Double_t b       = Noff/tau;
   //cout << "g = " << g << " and b = " << b << endl;
   //Double_t tauest  = par[2];
   //Double_t boff    = b*tauest;
@@ -1696,7 +1696,8 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,1./2.,1./2.);
   //hdNdEpOn->Add(hdNdEpSignal,(Non-b)/Non);
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(Non-b),b);
-  hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,Non/2.,Non/2.);
+  hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(g-b)/Non,b/Non);
+  //hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,Non/2.,Non/2.);
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(726-119/3.),119/3.);
   //hdNdEpOn->SaveAs("./template_test.root");
   //while(true) cout << "infinite loop" << endl;
