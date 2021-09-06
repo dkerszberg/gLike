@@ -238,8 +238,9 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
   // End of print-out configuration info
 
   // Arrays of Lkl parabolas (one per mass value) to be plotted is showParabolaPlots=kTRUE
-  /*TGraph*  grLklParabola[nmass];
-  for(Int_t imass=0;imass<nmass;imass++)
+  //TGraph*  grLklParabola[nmass];
+  TGraph*  grLklParabola = NULL;
+  /*for(Int_t imass=0;imass<nmass;imass++)
     grLklParabola[imass] = NULL;
   const Int_t nlines = 5;  // number of lines in parabolas canvas
   Int_t ncols = TMath::Ceil(nmass/Float_t(nlines)); // number of columns in parabolas canvas*/
@@ -705,12 +706,14 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	  svLimVal[imass]      = (svminval>0?  svcutval : svcutvalpos); // convention used in the Fermi paper
 	}
       else // use the Segue Stereo paper criterium
-	{	  
+	{*/	  
 	  Double_t svminval = lkl[0]->GetGLklMin();
 	  Double_t svcutval = svminval+lkl[0]->GetGLklMinErr();
-	  svSenVal[imass]  = svcutval-svminval; // sensitivity
-	  svLimVal[imass]  = (svminval<0?  svcutval-svminval : svcutval); // convention used in the Segue paper
-	}
+	  svSenVal[0]  = svcutval-svminval; // sensitivity
+	  svLimVal[0]  = (svminval<0?  svcutval-svminval : svcutval); // convention used in the Segue paper
+	  //svSenVal[imass]  = svcutval-svminval; // sensitivity
+	  //svLimVal[imass]  = (svminval<0?  svcutval-svminval : svcutval); // convention used in the Segue paper
+/*	}
       if(isDecay)
 	{
 	  svSenVal[imass]=1./svSenVal[imass];
@@ -723,26 +726,33 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
       if(showParabolaPlots)
 	{
 	  // get the graph of -2logLkl vs g*unitsOfG
-	  /*grLklParabola[imass] = lkl[0]->GetLklVsG();
-	  grLklParabola[imass]->SetName(Form("grLklParabola_%02d",imass));
+	  //grLklParabola[imass] = lkl[0]->GetLklVsG();
+	  grLklParabola = lkl[0]->GetLklVsG();
+	  //grLklParabola[imass]->SetName(Form("grLklParabola_%02d",imass));
+	  grLklParabola->SetName(Form("grLklParabola"));
 
 	  if(!Init_canvas_parabolas)
 	    {
 	      gStyle->SetPadRightMargin(0.1);
-	      lklcanvas = new TCanvas("lklcanvas","-2logLkl vs g curves",ncols*250,nlines*250);
-	      lklcanvas->Divide(ncols,nlines);
+	      //lklcanvas = new TCanvas("lklcanvas","-2logLkl vs g curves",ncols*250,nlines*250);
+	      lklcanvas = new TCanvas("lklcanvas","-2logLkl vs g curves",250,250);
+	      //lklcanvas->Divide(ncols,nlines);
 	      Init_canvas_parabolas = kTRUE;
 	    }
-	  lklcanvas->cd(imass+1);
+	  //lklcanvas->cd(imass+1);
+	  lklcanvas->cd(1);
 
-	  TString parabolaplotform = Form("-2logLkl vs %s for mass %s GeV",(isDecay? "1/#tau_{DM}":"<sv>"),mprecform.Data());
+	  //TString parabolaplotform = Form("-2logLkl vs %s for mass %s GeV",(isDecay? "1/#tau_{DM}":"<sv>"),mprecform.Data());
+	  TString parabolaplotform = Form("-2logLkl vs %s for scenario %s order %s framework",scenario,order,framework);
 	  
 	  // plot empty histo with nice settings to hold the -2logLkl parabolas
-	  TString dummytit = Form(parabolaplotform,mass);
-	  TH1I *dymmyparabola = new TH1I(Form("dummyparabola_%d",imass),dummytit,1,grLklParabola[imass]->GetX()[0],grLklParabola[imass]->GetX()[grLklParabola[imass]->GetN()-1]);
+	  //TString dummytit = Form(parabolaplotform,mass);
+	  TString dummytit = Form(parabolaplotform);
+	  //TH1I *dymmyparabola = new TH1I(Form("dummyparabola_%d",imass),dummytit,1,grLklParabola[imass]->GetX()[0],grLklParabola[imass]->GetX()[grLklParabola[imass]->GetN()-1]);
+	  TH1I *dymmyparabola = new TH1I(Form("dummyparabola"),dummytit,1,grLklParabola->GetX()[0],grLklParabola->GetX()[grLklParabola->GetN()-1]);
 	  dymmyparabola->SetDirectory(0);
 	  dymmyparabola->SetStats(0);
-	  dymmyparabola->SetXTitle((isDecay?"1/#tau_{DM} [s^{-1}]" : "<#sigma v> [cm^{3}/s]"));
+	  //dymmyparabola->SetXTitle((isDecay?"1/#tau_{DM} [s^{-1}]" : "<#sigma v> [cm^{3}/s]"));
 	  dymmyparabola->SetYTitle("#Delta(-2logL)");
 	  dymmyparabola->SetMinimum(0);
 	  dymmyparabola->SetMaximum(10);
@@ -750,10 +760,11 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	  delete dymmyparabola;
 	  
 	  // plot -2logLkl vs <sv>
-	  grLklParabola[imass]->Draw("l");
+	  //grLklParabola[imass]->Draw("l");
+	  grLklParabola->Draw("l");
 	  gPad->SetGrid();
 	  gPad->Modified();
-	  gPad->Update();*/
+	  gPad->Update();
 	}
 
       // Save -2logLkl vs <sv> in file
@@ -867,9 +878,10 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
     }*/
 
   // canvas for plots
-  /*TCanvas* limcanvas  = new TCanvas("limcanvas",Form("Dark matter %s limits",(isDecay? "tauDM" : "<sv>")),800,800);
+  //TCanvas* limcanvas  = new TCanvas("limcanvas",Form("Dark matter %s limits",(isDecay? "tauDM" : "<sv>")),800,800);
+  TCanvas* limcanvas  = new TCanvas("limcanvas",Form("Lorentz invariance violation %s limits",order),800,800);
 
-  TH1I *dummylim = new TH1I("dummylim",Form("%s ULs vs mass",(isDecay? "#tau_{DM}" : "<#sigma v>")),1,massval[0],massval[nmass-1]);
+  /*TH1I *dummylim = new TH1I("dummylim",Form("%s ULs vs mass",(isDecay? "#tau_{DM}" : "<#sigma v>")),1,massval[0],massval[nmass-1]);
   dummylim->SetStats(0);
   dummylim->SetMinimum(plotmin);
   dummylim->SetMaximum(plotmax);
@@ -911,8 +923,8 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
   //limcanvas->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+"_limits"+seedTag+".pdf");
   if(showParabolaPlots)
     {
-      //limcanvas->Print(realPlotDir+"root/"+label+"_"+simulationlabel+"_2logLVsG"+seedTag+".root");
-      //limcanvas->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+"_2logLVsG"+seedTag+".pdf");
+      limcanvas->Print(realPlotDir+"root/"+label+"_"+simulationlabel+"_2logLVsG"+seedTag+".root");
+      limcanvas->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+"_2logLVsG"+seedTag+".pdf");
     }
   if(showSamplePlots) 
     for(Int_t isample=0;isample<nsamples;isample++)

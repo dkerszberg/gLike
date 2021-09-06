@@ -1684,7 +1684,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   //Double_t boff    = b*tau;
   //Double_t fnorm   = g+b+boff;
   //Double_t fnorm   = g+b;
-  Double_t fnorm   = g;
+  Double_t fnorm   = Non;
   //Double_t fnorm   = 726;
 
   if(verbose_test) cout << "Non = " << Non << " g = " << g << " fnorm = " << fnorm << endl;
