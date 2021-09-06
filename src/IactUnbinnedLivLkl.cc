@@ -21,7 +21,7 @@
 #include "TLatex.h"
 #include "TPRegexp.h"
 #include "TRandom3.h"
-
+#include "TRandom2.h"
 // include gLike needed classes
 #include "IactUnbinnedLivLkl.h"
 #include "IactEventListIrf.h"
@@ -150,9 +150,9 @@ static const Int_t    gNBins           = 1000;                    // default num
 static const Int_t    gNFineLEBins       = 100;                   // default number of fine bins for internal histos
 static const Double_t gFineLEMin       = TMath::Log10(10);       // default minimum log(energy[GeV]) for internal histos
 static const Double_t gFineLEMax       = TMath::Log10(1000000);   // default maximum log(energy[GeV]) for internal histos
-static const Int_t    gNFineTBins       = 100;                   // default number of fine bins for internal histos
+static const Int_t    gNFineTBins       = 1000;                   // default number of fine bins for internal histos
 static const Float_t  gFineTMin  = 0;//1e01;                   // [s] default value of minimum arrival time
-static const Float_t  gFineTMax  = 2.e05;//1e03;                   // [s] default value of maximum arrival time
+static const Float_t  gFineTMax  = 5.e03;//1e03;                   // [s] default value of maximum arrival time
 static const Double_t gCenterBin       = 0.5;                    // decide which value represents bin in histogram (= 0 for lower bin edge, 0.5 for the middle, 1 for the right edge)
 
 // static functions (for internal processing of input data)
@@ -354,13 +354,13 @@ for(Int_t ibin=ibinmin;ibin<=ibinmax;ibin++)
       realEmax = TMath::Power(10,fHdNdEBkg->GetYaxis()->GetBinLowEdge(jbin+1)+fHdNdEBkg->GetYaxis()->GetBinWidth(jbin+1));
       //dE = realEmax-realEmin;
       E = (realEmax+realEmin)/2.;
-      //Double_t dE_model = (TMath::Power(realEmax,-1.5) - TMath::Power(realEmin,-1.5))/-1.5;
-      fHdNdEBkg->SetBinContent(ibin+1,jbin+1,TMath::Power(E,-1.5));
-    }
+      Double_t dE_model = (TMath::Power(realEmax,-1.7) - TMath::Power(realEmin,-1.7))/-1.7;//Hardcoded: integration of E with slope -2.7 for background temp 
+      //fHdNdEBkg->SetBinContent(ibin+1,jbin+1,TMath::Power(E,-1.5)); - commented on 4-9-2021
+      fHdNdEBkg->SetBinContent(ibin+1,jbin+1,dE_model/*(1+eta)*/);   //template not changing - discuss
+ }
   cout << "Why would I be here more than once?" << endl;
   //SetdNdESignalFunction("",TMath::Power(10.,GetEmin()),TMath::Power(10.,GetEmax()),fTMin,fTMax,0); // skipped < 300 GeV --> Non-2
 }
-
 
   return 0;
 }
@@ -421,8 +421,8 @@ Int_t IactUnbinnedLivLkl::MakeChecks()
   // add your checks here and try to mend whatever needs to be mended
   //cout << "GetEmin() = " << GetEmin() << " fTMin = " << fTMin << endl;
   //cout << "GetEmax() = " << GetEmax() << " fTMax = " << fTMax << endl;
-  SetdNdESignalFunction("",TMath::Log10(GetEmin())-0.02,TMath::Log10(GetEmax()),fTMin,fTMax,0); // skipped < 300 GeV --> Non-2
-
+ // SetdNdESignalFunction("",TMath::Log10(GetEmin())-0.02,TMath::Log10(GetEmax()),fTMin,fTMax,0); // skipped < 300 GeV --> Non-2 - commented 3-9-2021
+  SetdNdESignalFunction("",TMath::Log10(GetEmin()),TMath::Log10(GetEmax()),fTMin,fTMax,0); // skipped < 300 GeV --> Non-2
   // Check the IactUnbinnedLivLkl specific part
   /////////////////////////////////////////
   // get the dN/dE' histograms for On and Off and check binning
@@ -1253,13 +1253,14 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
   Double_t realTmax;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmax+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(ibinmax+1);
   Double_t dt;//        = realTmax-realTmin;
   Double_t t;//        = realTmax-realTmin;
-
+  TRandom2 *rand =new TRandom2(3);
       for(Int_t ibin=ibinmin;ibin<=ibinmax;ibin++)
         {
               realTmin = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibin+1);
 	      realTmax = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibin+1)+fHdNdESignalLIV->GetXaxis()->GetBinWidth(ibin+1);
 	      //dt = realTmax-realTmin;
-	      dt = (TMath::Power(realTmax,1.) - TMath::Power(realTmin,1.))/1.;
+	      //dt = (TMath::Power(realTmax,1.) - TMath::Power(realTmin,1.))/1.; //commented 4-9-2021;time is not flat it's gaussian so we need that integration
+	      dt=0.5*(TMath::Erf((realTmax-600)/(150*TMath::Sqrt(2)))- TMath::Erf((realTmin-600)/(150*TMath::Sqrt(2))));	
 	      t = (realTmax+realTmin)/2.;
           for(Int_t jbin=jbinmin;jbin<=jbinmax;jbin++)
             {
@@ -1270,11 +1271,10 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
 	      //dt = (TMath::Power(realTmax,1.) - TMath::Power(realTmin,1.))/1.;
 	      dE = realEmax-realEmin;
 	      E = (realEmax+realEmin)/2.;
-
-	      Double_t dE_model = (TMath::Power(realEmax,-1.5) - TMath::Power(realEmin,-1.5))/-1.5;
+	      Double_t dE_model = (TMath::Power(realEmax,-1.0) - TMath::Power(realEmin,-1.0))/-1.0; //Hardcoded: integration of E with slope -2 for signal
   	      //if(!fHdNdEBkg)
                 //fHdNdEBkg->SetBinContent(ibin+1,jbin+1,TMath::Power(E,-1.5));
-	      fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,dE_model/*(1+eta)*/);
+	      fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,dE_model*dt/*(1+eta)*/);
 	    }
 	}
 
