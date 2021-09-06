@@ -1684,7 +1684,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   //Double_t boff    = b*tau;
   //Double_t fnorm   = g+b+boff;
   //Double_t fnorm   = g+b;
-  Double_t fnorm   = g;
+  Double_t fnorm   = Non;
   //Double_t fnorm   = 726;
 
   if(verbose_test) cout << "Non = " << Non << " g = " << g << " fnorm = " << fnorm << endl;
@@ -1696,7 +1696,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,1./2.,1./2.);
   //hdNdEpOn->Add(hdNdEpSignal,(Non-b)/Non);
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(Non-b),b);
-  hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(g-b)/Non,b/Non);
+  hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(g-b),b);
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,Non/2.,Non/2.);
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(726-119/3.),119/3.);
   //hdNdEpOn->SaveAs("./template_test.root");
