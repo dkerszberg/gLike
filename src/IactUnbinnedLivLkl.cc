@@ -338,16 +338,18 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
   cout << "jbinmin (E) = " << jbinmin << " jibinmax = " << jbinmax << endl;
   cout << "fNFineLEBins = " << fNFineLEBins << " GetEmin = " << TMath::Log10(GetEmin()) << " fFineLEMin = " << fFineLEMin << " fFineTMax = " << fFineLEMax << endl;
 
-  //Double_t realTmin;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmin+1);
-  //Double_t realTmax;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmax+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(ibinmax+1);
-  //Double_t dt;//        = realTmax-realTmin;
+  Double_t realTmin;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmin+1);
+  Double_t realTmax;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmax+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(ibinmax+1);
+  Double_t dt;//        = realTmax-realTmin;
   //Double_t t;//        = realTmax-realTmin;
 for(Int_t ibin=ibinmin;ibin<=ibinmax;ibin++)
 {
       //realTmin = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibin+1);
+      realTmin = fHdNdEBkg->GetXaxis()->GetBinLowEdge(ibin+1);
       //realTmax = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibin+1)+fHdNdESignalLIV->GetXaxis()->GetBinWidth(ibin+1);
-      //dt = realTmax-realTmin;
-      //t = (realTmax+realTmin)/2.;
+      realTmax = fHdNdEBkg->GetXaxis()->GetBinLowEdge(ibin+1)+fHdNdEBkg->GetXaxis()->GetBinWidth(ibin+1);
+      dt = realTmax-realTmin;
+     // t = (realTmax+realTmin)/2.;
   for(Int_t jbin=jbinmin;jbin<=jbinmax;jbin++)
     {
       realEmin = TMath::Power(10,fHdNdEBkg->GetYaxis()->GetBinLowEdge(jbin+1));
@@ -356,7 +358,7 @@ for(Int_t ibin=ibinmin;ibin<=ibinmax;ibin++)
       E = (realEmax+realEmin)/2.;
       Double_t dE_model = (TMath::Power(realEmax,-1.7) - TMath::Power(realEmin,-1.7))/-1.7;//Hardcoded: integration of E with slope -2.7 for background temp 
       //fHdNdEBkg->SetBinContent(ibin+1,jbin+1,TMath::Power(E,-1.5)); - commented on 4-9-2021
-      fHdNdEBkg->SetBinContent(ibin+1,jbin+1,dE_model/*(1+eta)*/);   //template not changing - discuss
+      fHdNdEBkg->SetBinContent(ibin+1,jbin+1,dE_model*dt/*(1+eta)*/);   //template not changing - discuss
  }
   cout << "Why would I be here more than once?" << endl;
   //SetdNdESignalFunction("",TMath::Power(10.,GetEmin()),TMath::Power(10.,GetEmax()),fTMin,fTMax,0); // skipped < 300 GeV --> Non-2
