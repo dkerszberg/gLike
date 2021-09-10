@@ -35,9 +35,11 @@ void convertGLikeInputFiles(TString inputfile, TString outputfile)
   else if(inputfile.CompareTo(outputfile)==0)
     cout << "Input and output file names cannot be the same" << endl;
   else
-    {
+    {cout <<"first"<<flush<<endl; 
       processSample(inputfile,outputfile);
+cout <<"first2"<<flush<<endl; 
       checkFile(outputfile);
+cout <<"first3"<<flush<<endl; 
     }
 }
 
@@ -138,38 +140,44 @@ void processSample(TString inputFileName,TString outputFileName)
 
   Double_t myE=0.;
   Double_t myT=0.;
+  Double_t myTprime=0.;
 
   TRandom2 *rand =new TRandom2(3);
-  vector<double> vect_on;
+  //vector<double> vect_on;
+  vector< pair <double,double> >vect_on;
   vector<double> vect_on_E;
   vector<double> vect_off;
-
+cout <<"first"<<endl; 
   // read event data from old class and write it in new class
   IactEventListIrf*  newclass = new IactEventListIrf;
-  
   UInt_t non = 2000;//oldclass->GetOnSample()->GetEntries();
   for(UInt_t ion=0;ion<non;ion++)
     {
       myT = rand->Gaus(600,150)/86400. + 50000;
-      vect_on.push_back(myT);
+      //vect_on.push_back(myT);
       myE = 10000*TMath::Power(rand->Uniform(1,10),-2);
-      vect_on_E.push_back(myE);
+      myTprime=myT + 10*0.017*myE/86400.;
+      //vect_on_E.push_back(myE);
+      vect_on.push_back(make_pair(myTprime,myE));
     }
   UInt_t non_2 = 3000;//oldclass->GetOnSample()->GetEntries();
   for(UInt_t ion=0;ion<non_2;ion++)
     {
       myT = rand->Uniform(50,1150)/86400. + 50000;
-      vect_on.push_back(myT);
+     // vect_on.push_back(myT);
       myE = 10000*TMath::Power(rand->Uniform(1,10),-2.7);
-      vect_on_E.push_back(myE);
+      //vect_on_E.push_back(myE);
+      vect_on.push_back(make_pair(myT,myE));
     }
+cout <<"before"<<endl; 
   sort(vect_on.begin(),vect_on.end());
+cout <<"after"<<endl;
   for(UInt_t ion=0;ion<non+non_2;ion++)
     {
       oldclass->GetOnEntry(ion);
-      myT = vect_on[ion]; //rand->Gaus(600,150)/86400. + 50000;
-      myE = vect_on_E[ion]; //rand->Gaus(600,150)/86400. + 50000;
-      newclass->FillOnEvent(myE,IactEventListIrf::gDefRADECVal,IactEventListIrf::gDefRADECVal,eventOn.dRA,eventOn.dDEC,myT,eventOn.had);
+      myTprime = vect_on[ion].first; //rand->Gaus(600,150)/86400. + 50000;
+      myE = vect_on[ion].second; //rand->Gaus(600,150)/86400. + 50000;
+      newclass->FillOnEvent(myE,IactEventListIrf::gDefRADECVal,IactEventListIrf::gDefRADECVal,eventOn.dRA,eventOn.dDEC,myTprime,eventOn.had);
     }
 
   UInt_t noff = 3000; //oldclass->GetOffSample()->GetEntries();
