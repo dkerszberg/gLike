@@ -767,6 +767,8 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	  gPad->Update();
 	}
 
+for(int z=0; z<grLklParabola->GetN()-1; z++) cout << "z = " << z << "and parabola x = " << grLklParabola->GetX()[z] << " and y = " << grLklParabola->GetY()[z] << endl;
+
       // Save -2logLkl vs <sv> in file
       //////////////////////////////////////////////////////////////
       /*if (exportData)
