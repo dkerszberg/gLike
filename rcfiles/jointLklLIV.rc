@@ -124,11 +124,14 @@ JOINT LIKELIHOOD CONFIGURATION
 #   dLogJ only once for their common parent term. This is so because logJ is used to transform excess events into <sv> units whereas a non-zero
 #   DlogJ indicates that the uncertainty in the units of a particular lkl term is an *independent* random variable.
 #
+
 jointLklLIV.lklTerm000: JointLkl            -         Dz=0.01 
-jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4  Dz=0.01    inputfile=data/root/Gaussian_try2_genericIact_dataIRF_01.root  LC="powerlaw"
-jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.2  Dz=0.03     inputfile=data/root/Gaussian_try2_genericIact_dataIRF_02.root  LC="powerlaw"
+jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try2_genericIact_dataIRF_01.root  LC="powerlaw"
+jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try2_genericIact_dataIRF_02.root  LC="powerlaw"
 #jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4  Dz=0.01    inputfile=data/root/gaussianLIVIact_dataIRF_01.root  LC="powerlaw"
 #jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.2  Dz=0.03     inputfile=data/root/gaussianLIVIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/gaussianLIVIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245 Dz=0.03     inputfile=data/root/gaussianLIVIact_dataIRF_02.root  LC="powerlaw"
 #jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4  Dz=0.01    inputfile=data/root/genericIact_dataIRF_01.root  LC="powerlaw"
 #jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.2  Dz=0.03     inputfile=data/root/genericIact_dataIRF_02.root  LC="powerlaw"
 #jointLklLIV.lklTerm002: IactBinnedLivLkl    0  z=0.1  Dz=0     inputfile=data/root/genericIact_dataIRF_02.root  nbins=20
