@@ -125,13 +125,47 @@ JOINT LIKELIHOOD CONFIGURATION
 #   DlogJ indicates that the uncertainty in the units of a particular lkl term is an *independent* random variable.
 #
 
+
+#try2-eta=0.01,try3-eta=0.02, try4-eta=0.001, try5-eta=1.0 try6-eta=0.05 try7-eta=0.005 try8-eta=0.2 try9-eta=0.5
+# try10-eta=-0.01 try11-eta=-0.02 try12-eta=-1 try13-eta=-0.001 try14-eta=-0.05 try15-eta=-0.005 try16-eta=-0.2 try17-eta=-0.5
 jointLklLIV.lklTerm000: JointLkl            -         Dz=0.01 
-jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try2_genericIact_dataIRF_01.root  LC="powerlaw"
-jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try2_genericIact_dataIRF_02.root  LC="powerlaw"
-#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4  Dz=0.01    inputfile=data/root/gaussianLIVIact_dataIRF_01.root  LC="powerlaw"
-#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.2  Dz=0.03     inputfile=data/root/gaussianLIVIact_dataIRF_02.root  LC="powerlaw"
 #jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/gaussianLIVIact_dataIRF_01.root  LC="powerlaw"
 #jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245 Dz=0.03     inputfile=data/root/gaussianLIVIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try2_genericIact_dataIRF_01.root  LC="powerlaw" 
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try2_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try3_genericIact_dataIRF_01.root  LC="powerlaw" 
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try3_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try4_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try4_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try5_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try5_genericIact_dataIRF_02.root  LC="powerlaw"
+jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try6_genericIact_dataIRF_01.root  LC="powerlaw"
+jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try6_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try7_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try7_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try8_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try8_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try9_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try9_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try10_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try10_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try11_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try11_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try12_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try12_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try13_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try13_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try14_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try14_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try15_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try15_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try16_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try16_genericIact_dataIRF_02.root  LC="powerlaw"
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try17_genericIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try17_genericIact_dataIRF_02.root  LC="powerlaw"
+
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4  Dz=0.01    inputfile=data/root/gaussianLIVIact_dataIRF_01.root  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.2  Dz=0.03     inputfile=data/root/gaussianLIVIact_dataIRF_02.root  LC="powerlaw"
 #jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4  Dz=0.01    inputfile=data/root/genericIact_dataIRF_01.root  LC="powerlaw"
 #jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.2  Dz=0.03     inputfile=data/root/genericIact_dataIRF_02.root  LC="powerlaw"
 #jointLklLIV.lklTerm002: IactBinnedLivLkl    0  z=0.1  Dz=0     inputfile=data/root/genericIact_dataIRF_02.root  nbins=20
