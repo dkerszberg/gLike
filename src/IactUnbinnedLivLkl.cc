@@ -150,7 +150,7 @@ static const Int_t    gNBins           = 1000;                    // default num
 static const Int_t    gNFineLEBins       = 100;                   // default number of fine bins for internal histos
 static const Double_t gFineLEMin       = TMath::Log10(10);       // default minimum log(energy[GeV]) for internal histos
 static const Double_t gFineLEMax       = TMath::Log10(1000000);   // default maximum log(energy[GeV]) for internal histos
-static const Int_t    gNFineTBins       = 1000;                   // default number of fine bins for internal histos
+static const Int_t    gNFineTBins       = 20000;                   // default number of fine bins for internal histos
 static const Float_t  gFineTMin  = 0;//1e01;                   // [s] default value of minimum arrival time
 static const Float_t  gFineTMax  = 5.e03;//1e03;                   // [s] default value of maximum arrival time
 static const Double_t gCenterBin       = 0.5;                    // decide which value represents bin in histogram (= 0 for lower bin edge, 0.5 for the middle, 1 for the right edge)
@@ -207,7 +207,7 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
       else if(optname.CompareTo("Dz",TString::kIgnoreCase)==0)
         fDz=fldre[1].Atof();
       else if(optname.CompareTo("LC",TString::kIgnoreCase)==0)
-        fLC=fldre[1]; //if I put .Atof(); it will give me an empty thing LC= .
+        fLC=fldre[1]; 
       else if(optname.CompareTo("path",TString::kIgnoreCase)==0)
         path=fldre[1];
       else if(optname.CompareTo("inputfile",TString::kIgnoreCase)==0)
@@ -1763,9 +1763,9 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
 	    //if (onSample[ievent] > 3.) continue;
 	    //if (onSampleTime[ievent] > 49. || onSampleTime[ievent] < 51.) continue;
 	    // 24th May 2021 Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
-	    Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]+0.017*eta*TMath::Power(10.,onSample[ievent]),onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
+	    Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]+eta*TMath::Power(10.,onSample[ievent]),onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
       //Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]-0.000025*eta*TMath::Power(10.,onSample[ievent])*TMath::Power(10.,onSample[ievent]),onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
-	    //cout << "ievent = " << ievent << std::setprecision(16) << " E = " << TMath::Power(10.,onSample[ievent]) << ", t = " << onSampleTime[ievent] << " val = " << val << endl; 
+	  //  cout << "ievent = " << ievent << std::setprecision(16) << " E = " << TMath::Power(10.,onSample[ievent]) << ", t = " << onSampleTime[ievent] << " val = " << val << endl; 
       	    //cout << "lkl val = " << val << endl;
       if(val>0)
 	{

@@ -156,7 +156,7 @@ cout <<"first"<<endl;
       myT = rand->Gaus(600,150)/86400. + 50000;
       //vect_on.push_back(myT);
       myE = 10000*TMath::Power(rand->Uniform(1,10),-2);
-      myTprime=myT + 10*0.017*myE/86400.;
+      myTprime=myT - 0.5*myE/86400.;
       //vect_on_E.push_back(myE);
       vect_on.push_back(make_pair(myTprime,myE));
     }
