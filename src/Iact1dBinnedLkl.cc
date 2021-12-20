@@ -257,7 +257,6 @@ void Iact1dBinnedLkl::SpreadFixLklVsG(Double_t g)
   delete iter;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
 // Compute the -2logL curve for all added samples between glow and gupp
@@ -286,6 +285,7 @@ Int_t Iact1dBinnedLkl::PrepareForLklScan(Bool_t centerAtZero,Int_t npoints,Doubl
 
   return 0;
 }
+
 ////////////////////////////////////////////////////////////////
 //
 // Take the list of On and Off events and make histograms out of 
@@ -306,7 +306,7 @@ Int_t Iact1dBinnedLkl::BuildAndBinOnOffHistos()
       // Get the E' distribution for On and Off events
       TH1F* provHNOn  = GetHdNdEpOn(kFALSE,fNBins);
       TH1F* provHNOff = GetHdNdEpOff(kFALSE,fNBins);
-      
+
       if(!provHNOn || !provHNOff)
 	{
 	  cout << "Iact1dBinnedLkl::BuildAndBinOnOffHistos (" << GetName() << ") Warning: problems creating On and/or Off histograms, On = " << provHNOn << ", Off = " << provHNOff << "." << endl;
@@ -334,7 +334,7 @@ Int_t Iact1dBinnedLkl::BuildAndBinOnOffHistos()
 	      TH1F* hRebinOff =  (TH1F*) provHNOff->Rebin(nnewbins,"hRebinOff",newbin);
 	      hRebinOn->SetDirectory(0);
 	      hRebinOff->SetDirectory(0);
-	      
+
 	      // replace the fHNOn and fHNOff histograms by the rebinned ones
 	      fHNOn  = new TH1I("fHNOn", "E' distribution of On events", nnewbins,newbin);
 	      fHNOff = new TH1I("fHNOff","E' distribution of Off events",nnewbins,newbin);
@@ -520,7 +520,6 @@ TH1F* Iact1dBinnedLkl::GetHdNdEpOn(Bool_t isDifferential,Int_t nbins) const
   return h;
 }
 
-
 //////////////////////////////////////////////////////////////////
 //
 // Produce the E' distribution of Off events and return the 
@@ -572,6 +571,7 @@ TH1F* Iact1dBinnedLkl::GetHdNdEpOff(Bool_t isDifferential,Int_t nbins) const
 
   return h;
 }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
 // Simulate list of On and Off events
@@ -734,8 +734,6 @@ void GetRebinning(TH1F* hOn,TH1F* hOff,UInt_t minnevts,UInt_t& inewbin,Double_t*
     }
 }
 
-
-		
 ////////////////////////////////////////////////////////////////////////
 // joint likelihood function (-2logL) for all bins
 // To be minimized by TMinuit

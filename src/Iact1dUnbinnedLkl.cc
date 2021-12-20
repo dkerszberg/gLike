@@ -393,7 +393,6 @@ void Iact1dUnbinnedLkl::SetFunctionAndPars(Double_t ginit)
       FixPar(Iact1dUnbinnedLkl::gTauIndex);
     }
 }		
-		
 
 ////////////////////////////////////////////////////////////////
 //
@@ -412,7 +411,7 @@ Int_t Iact1dUnbinnedLkl::MakeChecks()
       cout << "Iact1dUnbinnedLkl::MakeChecks Warning: missing information, cannot perform fit, check your code!" << endl;
       return 1;
     }
-  
+
   SetChecked();
   return 0;
 }	      
@@ -506,10 +505,9 @@ Int_t Iact1dUnbinnedLkl::CheckHistograms(Bool_t checkdNdEpBkg)
   NormalizedNdEHisto(fHdNdEpSignalOff);
   if(checkdNdEpBkg)
     NormalizedNdEHisto(fHdNdEpBkg);
-  if(fHdNdEpFrg) 
+  if(fHdNdEpFrg)
     NormalizedNdEHisto(fHdNdEpFrg);
-  
-  
+
   // if there are the dNdE' histograms for signal and background + data we're ready to go
   if(checkdNdEpBkg)
     {
@@ -724,7 +722,6 @@ Int_t Iact1dUnbinnedLkl::TransformAndSavedNdEpBkg(TH1F* hProvdNdEBkg,Bool_t inte
 
   return 0;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
@@ -967,7 +964,7 @@ Int_t Iact1dUnbinnedLkl::SetMigMatrix(TH2F* provMM)
 Int_t Iact1dUnbinnedLkl::SimulateDataSamples(Float_t meanGwithUnits,TRandom* rdm)
 {
   if(meanGwithUnits<0) meanGwithUnits=0;
-  
+
   // Sanity checks
   if(!fHdNdEpBkg)
     {
@@ -1156,7 +1153,6 @@ Int_t Iact1dUnbinnedLkl::GetRealBkgAndGoffHistos(TRandom* rdm,TH1F*& hdNdEpBkg,T
   
   return 0;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
@@ -1479,6 +1475,7 @@ void Iact1dUnbinnedLkl::PrintData(Int_t level)
   if(fHdNdEpSignalOff && fHdNdEpSignal)
     {Margin(level); cout << "            Signal in Off = " << GetdNdEpSignalOffIntegral()/GetdNdEpSignalIntegral()*100  << "% of that in On" << endl;}
 }
+
 //////////////////////////////////////////////////////////////////
 //
 // Produce the E' distribution of On events and return the 
@@ -1853,13 +1850,13 @@ void fullLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag
   hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,g,b);
   if(hdNdEpFrg)
     hdNdEpOn->Add(hdNdEpOn,hdNdEpFrg,1,frg);
-    
+
   // normalize
   if(fnorm>0)
     hdNdEpOn->Scale(1./fnorm);
   else
     mylkl->NormalizedNdEHisto(hdNdEpOn);
-    
+
   TH1F* hdNdEpOff = new TH1F("hdNdEpOff","Off event rate vs E'", nbins,xmin,xmax);
   hdNdEpOff->Reset();
   if(hdNdEpSignalOff)
@@ -1895,7 +1892,7 @@ void fullLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag
       else
 	f += gLklValVeryHigh;
     }
-  
+
   // nuisance tau
   if(dTau>0)
     f+=-2*TMath::Log(TMath::Gaus(tauest, tau, dTau, kTRUE));
