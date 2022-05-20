@@ -5,6 +5,8 @@
 #ifndef IACTBINNEDLIVLKL
 #define IACTBINNEDLIVLKL
 
+#include "TRandom3.h"
+
 #include "Lkl.h"
 #include "Iact1dUnbinnedLkl.h"
 #include "JointLkl.h"
