@@ -1725,8 +1725,12 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,1./2.,1./2.);
   //hdNdEpOn->Add(hdNdEpSignal,(Non-b)/Non);
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(Non-b),b);
+<<<<<<< HEAD
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(g-b)/Non,b/Non);
  hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(g-b),b);
+=======
+  hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(g-b),b);
+>>>>>>> 3fcef35a8a9e98b08218fc04203bfbc9013392ac
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpSignal,Non/2.,Non/2.);
   //hdNdEpOn->Add(hdNdEpSignal,hdNdEpBkg,(726-119/3.),119/3.);
   //hdNdEpOn->SaveAs("./template_test.root");
