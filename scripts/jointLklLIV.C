@@ -630,17 +630,17 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
       /////////////////////
       if(showSamplePlots)
 	// loop over samples
-	/*for(Int_t isample=0;isample<nsamples;isample++)
+	for(Int_t isample=0;isample<nsamples;isample++)
 	  {
 	    IactUnbinnedLivLkl* fullLkl = dynamic_cast<IactUnbinnedLivLkl*>(sample[isample]);
 	    //IactUnbinnedLivLkl* fullLkl = sample[isample];
 	    
-	    if(!Init_canvas_samples)
-	      {
+	    /*if(!Init_canvas_samples)
+	      {*/
 		hadcanvas[isample] = fullLkl->PlotHistosAndData();
 		hadcanvas[isample]->SetName(Form("hadcanvas_%d",isample));
 		hadcanvas[isample]->SetTitle(Form("IRFs and data for sample %d",isample));
-		hadcanvas[isample]->cd(5);
+		/*hadcanvas[isample]->cd(5);
 		TLatex* ltchannel;
 		//if(nChannels == 1) ltchannel = new TLatex(0.8,0.8,strchannel);
 		//else ltchannel = new TLatex(0.7,0.8,strchannel);
@@ -672,10 +672,10 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 		    hdNdEpSignalOff->DrawCopy("same");
 		    delete hdNdEpSignalOff;
 		  }
-	      }	    
+	      }	 */   
 	    gPad->Modified();
 	    gPad->Update();
-	  } // end of loop over samples*/
+	  } // end of loop over samples
       
       // compute -2logLkl vs g for precise limit computation
       cout << " *** Computing -2logL (parabola) vs g:" << endl;
@@ -731,19 +731,20 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	  //grLklParabola[imass]->SetName(Form("grLklParabola_%02d",imass));
 	  grLklParabola->SetName(Form("grLklParabola"));
 
-	  if(!Init_canvas_parabolas)
-	    {
+	  /*if(!Init_canvas_parabolas)
+	    {*/
 	      gStyle->SetPadRightMargin(0.1);
 	      //lklcanvas = new TCanvas("lklcanvas","-2logLkl vs g curves",ncols*250,nlines*250);
 	      lklcanvas = new TCanvas("lklcanvas","-2logLkl vs g curves",250,250);
 	      //lklcanvas->Divide(ncols,nlines);
-	      Init_canvas_parabolas = kTRUE;
-	    }
+	      //lklcanvas->Divide(2,1);
+	      /*Init_canvas_parabolas = kTRUE;
+	    }*/
 	  //lklcanvas->cd(imass+1);
 	  lklcanvas->cd(1);
 
 	  //TString parabolaplotform = Form("-2logLkl vs %s for mass %s GeV",(isDecay? "1/#tau_{DM}":"<sv>"),mprecform.Data());
-	  TString parabolaplotform = Form("-2logLkl vs %s for scenario %s order %s framework",scenario,order,framework);
+	  TString parabolaplotform = Form("-2logLkl vs eta for %s (scenario), %s (order), %s (framework)",scenario.Data(),order.Data(),framework.Data());
 	  
 	  // plot empty histo with nice settings to hold the -2logLkl parabolas
 	  //TString dummytit = Form(parabolaplotform,mass);
@@ -767,7 +768,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	  gPad->Update();
 	}
 
-for(int z=0; z<grLklParabola->GetN()-1; z++) cout << "z = " << z << "and parabola x = " << grLklParabola->GetX()[z] << " and y = " << grLklParabola->GetY()[z] << endl;
+for(int z=0; z<grLklParabola->GetN()-1; z++) cout << "z = " << z << " and parabola x = " << grLklParabola->GetX()[z] << " and y = " << grLklParabola->GetY()[z] << endl;
 
       // Save -2logLkl vs <sv> in file
       //////////////////////////////////////////////////////////////
@@ -798,6 +799,12 @@ for(int z=0; z<grLklParabola->GetN()-1; z++) cout << "z = " << z << "and parabol
       if(svSenVal[imass]>maxparval) maxparval=svSenVal[imass];
     }*/
 
+      svLimVal[0]*=plotScale;
+      svSenVal[0]*=plotScale;
+      if(svLimVal[0]<minparval) minparval=svLimVal[0];
+      if(svSenVal[0]<minparval) minparval=svSenVal[0];
+      if(svLimVal[0]>maxparval) maxparval=svLimVal[0];
+      if(svSenVal[0]>maxparval) maxparval=svSenVal[0];
 
   // Report limits
   //////////////////
@@ -817,6 +824,13 @@ for(int z=0; z<grLklParabola->GetN()-1; z++) cout << "z = " << z << "and parabol
   for(Int_t imass=0;imass<nmass;imass++)
     cout << svSenVal[imass] << (imass<nmass-1? "," : "");
   cout << "};" << endl;*/
+
+  cout << "Double_t limit[nmass]  = {";
+  //for(Int_t imass=0;imass<nmass;imass++)
+    cout << svLimVal[0] << "};" << endl;
+  cout << "Double_t snstvt[nmass]  = {";
+  //for(Int_t imass=0;imass<nmass;imass++)
+    cout << svSenVal[0] << "};" << endl;
 
   Double_t fLimVal[1];
   Double_t fSenVal[1];
@@ -881,7 +895,7 @@ for(int z=0; z<grLklParabola->GetN()-1; z++) cout << "z = " << z << "and parabol
 
   // canvas for plots
   //TCanvas* limcanvas  = new TCanvas("limcanvas",Form("Dark matter %s limits",(isDecay? "tauDM" : "<sv>")),800,800);
-  TCanvas* limcanvas  = new TCanvas("limcanvas",Form("Lorentz invariance violation %s limits",order),800,800);
+  TCanvas* limcanvas  = new TCanvas("limcanvas",Form("Lorentz invariance violation limits (%s case)",order.Data()),800,800);
 
   /*TH1I *dummylim = new TH1I("dummylim",Form("%s ULs vs mass",(isDecay? "#tau_{DM}" : "<#sigma v>")),1,massval[0],massval[nmass-1]);
   dummylim->SetStats(0);
@@ -925,19 +939,61 @@ for(int z=0; z<grLklParabola->GetN()-1; z++) cout << "z = " << z << "and parabol
   //limcanvas->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+"_limits"+seedTag+".pdf");
   if(showParabolaPlots)
     {
-      limcanvas->Print(realPlotDir+"root/"+label+"_"+simulationlabel+"_2logLVsG"+seedTag+".root");
-      limcanvas->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+"_2logLVsG"+seedTag+".pdf");
+      lklcanvas->Print(realPlotDir+"root/"+label+"_"+simulationlabel+"_2logLVsG"+seedTag+".root");
+      lklcanvas->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+"_2logLVsG"+seedTag+".pdf");
     }
   if(showSamplePlots) 
     for(Int_t isample=0;isample<nsamples;isample++)
       {	
-	//hadcanvas[isample]->Print(realPlotDir+"root/"+label+"_"+simulationlabel+Form("_histos_sample%02d",isample)+seedTag+".root");
-	//hadcanvas[isample]->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+Form("_histos_sample%02d",isample)+seedTag+".pdf");
+	hadcanvas[isample]->Print(realPlotDir+"root/"+label+"_"+simulationlabel+Form("_histos_sample%02d",isample)+seedTag+".root");
+	hadcanvas[isample]->Print(realPlotDir+"pdf/" +label+"_"+simulationlabel+Form("_histos_sample%02d",isample)+seedTag+".pdf");
       }
   
   // Clean up and close 
   /////////////////////
   delete [] lkl;
+}
+
+void DistanceParameter(Double_t z, Int_t order, TString framework)
+{
+
+  Double_t H0 = ;
+  Double_t Omega_m = 0.3089;
+  Double_t Omega_Lambda = 0.6911;
+  TF1* distance_parameter_integral;
+  Double_t distance_parameter = 0.;
+
+  if (framework=="J&P")
+  {
+    distance_parameter_integral = new TF1("distance_parameter_integral","(1+x)^[0]/(TMath::Sqrt([1] + [2]*((1+x)^3)))",0,z); // underintegral function and boundaries
+    distance_parameter_integral->SetParameter(1,Omega_Lambda); // Dark energy density
+    distance_parameter_integral->SetParameter(2,Omega_m); // Matter density
+    if (order==1 || order==2)
+      distance_parameter_integral->SetParameter(0,order); // LIV power
+    else
+      cout << "This order ("<< order << ") is not supported! Exit..." << endl;
+
+    Double_t IntegralSolution = distance_parameter_integral->Integral(0,fZ); //only the integral part of the distance parameter
+    distance_parameter = distance_parameter_integral/H0;
+  }
+  else if (framework == "DSR")
+  {
+    if (order==1)
+    else if (order==2)
+    else
+    {
+      cout << "This order ("<< order << ") is not supported! Exit..." << endl;
+    }
+  }
+  else
+  {
+    cout << "This framework ("<< framework << ") is not supported! Exit..." << endl;
+  }
+
+//Double_t H0_1=23.80335094143954; // e-19 but this part cancels with Eqg part
+//Double_t H0_2=23803.35094143954; // e-22 but this part cancels with Eqg^2 part and eta whic is 10^-16 (energy in GeV)
+//Double_t DistPar_1 =IntegralSolution_1/(H0_1); //complete distance parameter
+
 }
 
 void setDefaultStyle()
