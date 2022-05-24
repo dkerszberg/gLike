@@ -92,6 +92,9 @@ void setDefaultStyle();
 
 const Int_t nMaxLkls = 1000;
 
+double LimitOnEnergyScale(Double_t lambda_limit, Double_t distance_parameter, Int_t order);
+double DistanceParameter(Double_t z, Int_t order, TString framework);
+
 void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t seed=-1)
 {
   setDefaultStyle();
@@ -121,7 +124,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
   TEnv*  env = new TEnv(configFileName);
   TString  label             = env->GetValue("jointLklLIV.Label","");
   TString  framework         = env->GetValue("jointLklLIV.Framework","LIV");
-  TString  order             = env->GetValue("jointLklLIV.Order","linear");
+  Int_t    order             = env->GetValue("jointLklLIV.Order",1);
   TString  scenario          = env->GetValue("jointLklLIV.Scenario","sup");
   Bool_t   isGpositive       = env->GetValue("jointLklLIV.isGpositive",kFALSE);
   Bool_t   showSamplePlots   = env->GetValue("jointLklLIV.showSamplePlots",kTRUE);
@@ -635,21 +638,23 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	    IactUnbinnedLivLkl* fullLkl = dynamic_cast<IactUnbinnedLivLkl*>(sample[isample]);
 	    //IactUnbinnedLivLkl* fullLkl = sample[isample];
 	    
-	    /*if(!Init_canvas_samples)
-	      {*/
-		hadcanvas[isample] = fullLkl->PlotHistosAndData();
-		hadcanvas[isample]->SetName(Form("hadcanvas_%d",isample));
-		hadcanvas[isample]->SetTitle(Form("IRFs and data for sample %d",isample));
+	    if(!Init_canvas_samples)
+	      {
+		//hadcanvas[isample] = fullLkl->PlotHistosAndData();
+		//hadcanvas[isample]->SetName(Form("hadcanvas_%d",isample));
+		//hadcanvas[isample]->SetTitle(Form("IRFs and data for sample %d",isample));
+                hadcanvas[isample] = new TCanvas(Form("hadcanvas_%d",isample),Form("IRFs and data for sample %d",isample), 1000, 1500);
+		fullLkl->PlotHistosAndData(hadcanvas[isample]);
 		/*hadcanvas[isample]->cd(5);
 		TLatex* ltchannel;
 		//if(nChannels == 1) ltchannel = new TLatex(0.8,0.8,strchannel);
 		//else ltchannel = new TLatex(0.7,0.8,strchannel);
 		ltchannel->SetTextSize(0.055);
 		ltchannel->SetNDC();
-		ltchannel->Draw();
+		ltchannel->Draw();*/
 	        if (!Init_canvas_samples && isample==nsamples-1) Init_canvas_samples = kTRUE;
 	      }
-	    else
+	    /*else
 	      {
 		hadcanvas[isample]->cd(5);
 		TH1F* hdNdESignal = new TH1F(*fullLkl->GetHdNdESignal());
@@ -672,7 +677,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 		    hdNdEpSignalOff->DrawCopy("same");
 		    delete hdNdEpSignalOff;
 		  }
-	      }	 */   
+	      }*/
 	    gPad->Modified();
 	    gPad->Update();
 	  } // end of loop over samples
@@ -735,7 +740,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	    {*/
 	      gStyle->SetPadRightMargin(0.1);
 	      //lklcanvas = new TCanvas("lklcanvas","-2logLkl vs g curves",ncols*250,nlines*250);
-	      lklcanvas = new TCanvas("lklcanvas","-2logLkl vs g curves",250,250);
+	      lklcanvas = new TCanvas("lklcanvas","-2logLkl vs g curves",4*250,4*250);
 	      //lklcanvas->Divide(ncols,nlines);
 	      //lklcanvas->Divide(2,1);
 	      /*Init_canvas_parabolas = kTRUE;
@@ -744,7 +749,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	  lklcanvas->cd(1);
 
 	  //TString parabolaplotform = Form("-2logLkl vs %s for mass %s GeV",(isDecay? "1/#tau_{DM}":"<sv>"),mprecform.Data());
-	  TString parabolaplotform = Form("-2logLkl vs eta for %s (scenario), %s (order), %s (framework)",scenario.Data(),order.Data(),framework.Data());
+	  TString parabolaplotform = Form("-2logLkl vs eta for %s (scenario), %s (order), %s (framework)",scenario.Data(),(order? "1":"2"),framework.Data());
 	  
 	  // plot empty histo with nice settings to hold the -2logLkl parabolas
 	  //TString dummytit = Form(parabolaplotform,mass);
@@ -832,6 +837,10 @@ for(int z=0; z<grLklParabola->GetN()-1; z++) cout << "z = " << z << " and parabo
   //for(Int_t imass=0;imass<nmass;imass++)
     cout << svSenVal[0] << "};" << endl;
 
+  Double_t d = DistanceParameter(0.4245, order, framework);
+  Double_t lim = LimitOnEnergyScale(svLimVal[0], d, order);
+  cout << " distance par = " << d << " and lim = " << lim << endl;
+
   Double_t fLimVal[1];
   Double_t fSenVal[1];
  
@@ -895,7 +904,7 @@ for(int z=0; z<grLklParabola->GetN()-1; z++) cout << "z = " << z << " and parabo
 
   // canvas for plots
   //TCanvas* limcanvas  = new TCanvas("limcanvas",Form("Dark matter %s limits",(isDecay? "tauDM" : "<sv>")),800,800);
-  TCanvas* limcanvas  = new TCanvas("limcanvas",Form("Lorentz invariance violation limits (%s case)",order.Data()),800,800);
+  //TCanvas* limcanvas  = new TCanvas("limcanvas",Form("Lorentz invariance violation limits (%s case)",order.Data()),800,800);
 
   /*TH1I *dummylim = new TH1I("dummylim",Form("%s ULs vs mass",(isDecay? "#tau_{DM}" : "<#sigma v>")),1,massval[0],massval[nmass-1]);
   dummylim->SetStats(0);
@@ -954,10 +963,17 @@ for(int z=0; z<grLklParabola->GetN()-1; z++) cout << "z = " << z << " and parabo
   delete [] lkl;
 }
 
-void DistanceParameter(Double_t z, Int_t order, TString framework)
+double LimitOnEnergyScale(Double_t lambda_limit, Double_t distance_parameter, Int_t order)
+{
+  return TMath::Power((distance_parameter/lambda_limit)*((order+1.)/2.),1./order);
+}
+
+double DistanceParameter(Double_t z, Int_t order, TString framework)
 {
 
-  Double_t H0 = ;
+  // 1 pc = 3.085 677 581 49 x 10**16 m
+  // 10**16 in m --> 10**22 for the Mpc --> 10**19 in km
+  Double_t H0 = 67.4 / (3.08567758149e+19);
   Double_t Omega_m = 0.3089;
   Double_t Omega_Lambda = 0.6911;
   TF1* distance_parameter_integral;
@@ -973,13 +989,15 @@ void DistanceParameter(Double_t z, Int_t order, TString framework)
     else
       cout << "This order ("<< order << ") is not supported! Exit..." << endl;
 
-    Double_t IntegralSolution = distance_parameter_integral->Integral(0,fZ); //only the integral part of the distance parameter
-    distance_parameter = distance_parameter_integral/H0;
+    Double_t integral_solution = distance_parameter_integral->Integral(0,z); //only the integral part of the distance parameter
+    distance_parameter = integral_solution/H0;
   }
   else if (framework == "DSR")
   {
     if (order==1)
+      cout << endl;
     else if (order==2)
+      cout << endl;
     else
     {
       cout << "This order ("<< order << ") is not supported! Exit..." << endl;
@@ -993,6 +1011,8 @@ void DistanceParameter(Double_t z, Int_t order, TString framework)
 //Double_t H0_1=23.80335094143954; // e-19 but this part cancels with Eqg part
 //Double_t H0_2=23803.35094143954; // e-22 but this part cancels with Eqg^2 part and eta whic is 10^-16 (energy in GeV)
 //Double_t DistPar_1 =IntegralSolution_1/(H0_1); //complete distance parameter
+
+  return distance_parameter;
 
 }
 

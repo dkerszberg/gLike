@@ -150,7 +150,7 @@ static const Int_t    gNBins           = 1000;                    // default num
 static const Int_t    gNFineLEBins       = 100;                   // default number of fine bins for internal histos
 static const Double_t gFineLEMin       = TMath::Log10(10);       // default minimum log(energy[GeV]) for internal histos
 static const Double_t gFineLEMax       = TMath::Log10(1000000);   // default maximum log(energy[GeV]) for internal histos
-static const Int_t    gNFineTBins       = 20000;                   // default number of fine bins for internal histos
+static const Int_t    gNFineTBins       = 200;                   // default number of fine bins for internal histos
 static const Float_t  gFineTMin  = 0;//1e01;                   // [s] default value of minimum arrival time
 static const Float_t  gFineTMax  = 5.e03;//1e03;                   // [s] default value of maximum arrival time
 static const Double_t gCenterBin       = 0.5;                    // decide which value represents bin in histogram (= 0 for lower bin edge, 0.5 for the middle, 1 for the right edge)
@@ -298,8 +298,8 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
 		//cout <<i<<","<<fOffSampleTime[i] << endl;
 	}
 */
-      fTMin       = fOnSampleTime[0];
-      fTMax       = fOnSampleTime[GetNon()-1];
+      fTMin       = fOnSampleTime[0]-100;
+      fTMax       = fOnSampleTime[GetNon()-1]+100;
       cout << "fTmin = " << fTMin << endl;
       cout << "fTmax = " << fTMax << endl;
       cout << "fEmin = " << GetEmin() << endl;
@@ -451,6 +451,7 @@ Int_t IactUnbinnedLivLkl::MakeChecks()
       return 1;
     }*/
 
+  cout << "Exiting make checks" << endl;
   SetChecked();
   return 0;
 }
@@ -1742,13 +1743,14 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
   //hdNdEpOn->SaveAs("./hdNdEpOn.root");
   TH2D* hdNdEpOff = new TH2D("hdNdEpOff","Off event rate vs E' vs t",nbinsT,tmin,tmax,nbins,xmin,xmax);
   hdNdEpOff->Reset();
+  hdNdEpOff->Add(hdNdEpBkg,b);
   //hdNdEpOff->Add(hdNdEpBkg,b/Non);
 
-  /*// normalize
+  // normalize
   if(fnorm>0)
     hdNdEpOff->Scale(1./fnorm);
   else
-    mylkl->NormalizedNdEHisto(hdNdEpOff);*/
+    mylkl->NormalizedNdEHisto(hdNdEpOff);
 
   // -2 log-likelihood
   f = 0;
@@ -1763,9 +1765,10 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
 	    //if (onSample[ievent] > 3.) continue;
 	    //if (onSampleTime[ievent] > 49. || onSampleTime[ievent] < 51.) continue;
 	    // 24th May 2021 Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
-	    Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]+eta*TMath::Power(10.,onSample[ievent]),onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
+	    //Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]+eta*TMath::Power(10.,onSample[ievent]),onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
+	    Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]+eta*TMath::Power(10.,onSample[ievent]),onSample[ievent])) + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]+eta*TMath::Power(10.,onSample[ievent]),onSample[ievent]));
       //Float_t val = hdNdEpOn->GetBinContent(hdNdEpOn->FindBin(onSampleTime[ievent]-0.000025*eta*TMath::Power(10.,onSample[ievent])*TMath::Power(10.,onSample[ievent]),onSample[ievent]));// + hdNdEpOff->GetBinContent(hdNdEpOff->FindBin(onSampleTime[ievent]/*-0.017*eta*TMath::Power(10.,onSample[ievent])*/,onSample[ievent]));
-	  //  cout << "ievent = " << ievent << std::setprecision(16) << " E = " << TMath::Power(10.,onSample[ievent]) << ", t = " << onSampleTime[ievent] << " val = " << val << endl; 
+	    //cout << "ievent = " << ievent << std::setprecision(16) << " E = " << TMath::Power(10.,onSample[ievent]) << ", t = " << onSampleTime[ievent] << " val = " << val << endl; 
       	    //cout << "lkl val = " << val << endl;
       if(val>0)
 	{
@@ -1783,10 +1786,10 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
 	}
       else
 	{
-	  //cout << "Why 0? i = " << ievent << " bin = " << hdNdEpOn->FindBin(onSampleTime[ievent],onSample[ievent]) << std::setprecision(18) << " E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << " and log = " << val << " for a modified time of t' = " << onSampleTime[ievent]+0.017*eta*TMath::Power(10.,onSample[ievent]) << " with eta = " << eta << " and TMath::Power(10.,onSample[ievent]) = " << TMath::Power(10.,onSample[ievent]) << endl;
+	 // cout << "Why 0? i = " << ievent << " bin = " << hdNdEpOn->FindBin(onSampleTime[ievent],onSample[ievent]) << std::setprecision(18) << " E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << " and log = " << val << " for a modified time of t' = " << onSampleTime[ievent]+0.017*eta*TMath::Power(10.,onSample[ievent]) << " with eta = " << eta << " and TMath::Power(10.,onSample[ievent]) = " << TMath::Power(10.,onSample[ievent]) << endl;
         //f += 100.;
-        f += 5000.;
-          //f += 1e99;
+        //f += 5000.;
+          f += 1e99;
 	}
     }
 
