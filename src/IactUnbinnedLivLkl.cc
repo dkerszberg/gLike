@@ -18,6 +18,7 @@
 #include "TFile.h"
 #include "TGraph.h"
 #include "TCanvas.h"
+#include "TLegend.h"
 #include "TLatex.h"
 #include "TPRegexp.h"
 #include "TRandom3.h"
@@ -511,6 +512,8 @@ Int_t IactUnbinnedLivLkl::CheckHistograms(Bool_t checkdNdEpBkg)
       fHdNdEpSignal         = new TH2D("fHdNdEpSignal","dN/dE' for Signal",fNFineTBins,fFineTMin,fFineTMax,fNFineLEBins,fFineLEMin,fFineLEMax);
       //cout << "After loop 3" << endl;
       fHdNdEpSignal->SetDirectory(0);
+      fHdNdEpSignal->SetXTitle("t [s]");
+      fHdNdEpSignal->SetYTitle("log_{10}(E' [GeV])");
       //cout << "After loop 4" << endl;
 
       // smear hdNdESignalAeff
@@ -901,8 +904,8 @@ cout << "TEST1" << endl;
 cout << nbinsT << " " << fTMin << " " << fTMax << " " << nbinsE << " " << GetEmin() << " " << GetEmax() << endl;
 
       // create histo
-      TH2D* h = new TH2D("dNdEpOn","dN/dE' vs t for On events",nbinsT,0.,1500.,nbinsE,TMath::Log10(GetEmin()),TMath::Log10(GetEmax()));
-      //TH2D* h = new TH2D("dNdEpOn","dN/dE' vs t for On events",nbinsT,fTMin,fTMax,nbinsE,TMath::Log10(GetEmin()),TMath::Log10(GetEmax()));
+      //TH2D* h = new TH2D("dNdEpOn","dN/dE' vs t for On events",nbinsT,0.,1500.,nbinsE,TMath::Log10(GetEmin()),TMath::Log10(GetEmax()));
+      TH2D* h = new TH2D("dNdEpOn","dN/dE' vs t for On events",nbinsT,fTMin,fTMax,nbinsE,TMath::Log10(GetEmin()),TMath::Log10(GetEmax()));
       //TH2F* h = new TH2F("dNdEpOn","dN/dE' vs t for On events",nbinsT,fTmin,fTmax,nbinsE,TMath::Log10(150.),TMath::Log10(2500.));
       h->SetDirectory(0);
       h->SetXTitle("t [s]");
@@ -1581,6 +1584,341 @@ CheckHistograms(kTRUE);
   return 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Plot at the input canvas all material used to minimize the -2logL:
+// - Aeff
+// - Ereso and Ebias
+// - dN/dE  for signal
+// - dN/dE' for background compared to the On and Off distributions with residuals
+// - dN/dE' for signal
+// 
+//
+void IactUnbinnedLivLkl::PlotHistosAndData(TCanvas* canvas) 
+{
+  MakeChecks();
+  SetChecked(kFALSE);
+  
+  // create and divide canvas
+  if(!canvas)
+    canvas = new TCanvas("histosAndDataCanvas","Iact1dUnbinnedLkl histos and data used to minimize -2logL", 1000, 1500);
+  canvas->Divide(2,4);
+
+  // draw plots
+  
+  ///////////////////////////
+  // CD(1) EFFECTIVE AREA
+  ///////////////////////////
+  canvas->cd(1);
+  if(GetHAeff())     GetHAeff()->DrawCopy();
+  if(GetHAeffOff())  GetHAeffOff()->DrawCopy("same");
+  gPad->SetLogy();
+  gPad->SetGrid();
+  gPad->Modified();
+  gPad->Update();    
+
+  ///////////////////////////
+  // CD(2)  dN/dE' background vs data
+  ///////////////////////////
+  canvas->cd(2);
+
+  // dN/dE' for bkg compared to Non and Noff distributions
+  TH2D* hdNdEpBkg = NULL;
+  if(fHdNdEpBkg)
+    {
+      hdNdEpBkg = new TH2D(*fHdNdEpBkg);
+      hdNdEpBkg->SetDirectory(0);
+    }
+  TH2D* hOn  = GetHdNdEpOn();
+  TH2D* hOff = GetHdNdEpOff();
+  hOn->SetDirectory(0);  
+  hOff->SetDirectory(0);
+  hOff->Scale(1./GetTau());
+
+cout << "TEST21" << endl;
+
+  if(hdNdEpBkg && GetNoff()>1)
+    hdNdEpBkg->Scale(GetNoff()/GetTau());
+
+  // Foreground contribution (if any)
+  /*TH2D* hdNdEpFrg = NULL;
+  Float_t dNdEpFrgNorm = 1;
+  if(GetHdNdEpFrg())
+    {
+      hdNdEpFrg = new TH2D(*fHdNdEpFrg);
+      hdNdEpFrg->SetDirectory(0);
+      dNdEpFrgNorm = GetdNdEpFrgIntegral()*fObsTime;
+      hdNdEpFrg->Scale(dNdEpFrgNorm);
+    }*/
+
+cout << "TEST22" << endl;
+  // set the framework plot
+  //TH1I *dummya = new TH1I("dummya", "dN/dE' bkg model vs On and Off distributions",1,TMath::Log10(GetEpmin()),TMath::Log10(GetEpmax()));
+  //TH1I *dummya = new TH1I("dummya", "dN/dE' bkg model vs On and Off distributions",1,TMath::Log10(GetEmin()),TMath::Log10(GetEmax()));
+  //TH2I *dummya = new TH2I("dummya", "dN/dE' bkg model vs On and Off distributions",1,0,1500,1,TMath::Log10(GetEmin()),TMath::Log10(GetEmax()));
+  TH2I *dummya = new TH2I("dummya", "dN/dE' bkg model vs On and Off distributions",1,GetTmin(),GetTmax(),1,TMath::Log10(GetEmin()),TMath::Log10(GetEmax()));
+  dummya->SetStats(0);
+  /*if(GetNon()>1)
+    {
+      dummya->SetMinimum(hOn->GetMinimum(0)/2.);
+      dummya->SetMaximum(hOn->GetMaximum()*2);
+    }
+  else if(GetNoff()>1)
+    {
+      dummya->SetMinimum(hOff->GetMinimum(0)/2.);
+      dummya->SetMaximum(hOff->GetMaximum()*2);
+    }
+  else if(hdNdEpBkg)
+    {
+      dummya->SetMinimum(hdNdEpBkg->GetMinimum());
+      dummya->SetMaximum(hdNdEpBkg->GetMaximum());
+    }*/
+    
+cout << "TEST23" << endl;
+  if(!hdNdEpBkg) dummya->SetTitle("dN/dE' distributions for On and Off event samples");
+  dummya->SetXTitle("t [s]");
+  dummya->SetYTitle("log_{10}(E' [GeV])");
+  //dummya->SetZTitle("dN/dE' [GeV^{-1}]");
+  dummya->DrawCopy();
+
+  // configure and plot the different histograms
+  if(hdNdEpBkg)
+    {
+      hdNdEpBkg->SetMarkerStyle(1);
+      hdNdEpBkg->SetLineColor(2);
+      //hdNdEpBkg->DrawCopy("hist same");
+    }
+  /*if(hdNdEpFrg)
+    {
+      hdNdEpBkg->SetMarkerStyle(2);
+      hdNdEpBkg->SetLineColor(2);
+      hdNdEpFrg->DrawCopy("hist same");
+    }*/
+  //hOn->SetLineColor(4);
+  //hOn->SetMarkerColor(4);
+  //hOn->SetMarkerStyle(8);
+  //hOn->SetMarkerSize(0.5);
+  hOn->DrawCopy("COLZ");
+  hOn->SaveAs("/home/dkerszberg/Softs/tests/gLikeLiv/gLikeLiv_new/hOn.root");
+  //hOff->SetLineColor(2);
+  //hOff->SetMarkerColor(2);
+  //hOff->SetMarkerStyle(8);
+  //hOff->SetMarkerSize(0.5);
+  //hOff->DrawCopy("esame");
+ 
+  //gPad->SetLogy();
+  //gPad->SetLogz();
+  //gPad->SetGrid();
+
+  // legend
+  TLegend* hleg = new TLegend(0.6, 0.65, 0.92, 0.92);
+  hleg->SetFillColor(0);
+  hleg->SetMargin(0.40);
+  hleg->SetBorderSize(0);
+  hleg->AddEntry(hOn,"On events","P");
+  hleg->AddEntry(hOff,"Off events","P");
+  if(hdNdEpBkg)
+    hleg->AddEntry(hdNdEpBkg,"Background model","L");
+  /*if(hdNdEpFrg)
+    hleg->AddEntry(hdNdEpFrg,"Foreground model","L");    */
+  //hleg->Draw();
+
+  gPad->Modified();
+  gPad->Update();    
+
+  canvas->cd(4);
+  dummya->DrawCopy();
+  hOff->DrawCopy("colz");
+
+  ///////////////////////////
+  // CD(3)  energy dispersion
+  ///////////////////////////
+  canvas->cd(3);
+  
+cout << "TEST24" << endl;
+  if(GetMigMatrix())
+    GetMigMatrix()->DrawCopy("colz");
+  else
+    {
+      TH1I *dummye;
+      if(GetGEreso())
+	dummye = new TH1I("dummye", "Energy resolution and bias",1,GetGEreso()->GetX()[0],GetGEreso()->GetX()[GetGEreso()->GetN()-1]);
+      else
+	dummye = new TH1I("dummye", "Energy resolution and bias",1,2,4);
+      dummye->SetStats(0);
+      dummye->SetMinimum(-0.1);
+      dummye->SetMaximum(0.4);
+      dummye->SetXTitle("log_{10}(E [GeV])");
+      dummye->SetYTitle("Energy resolution and bias");
+      dummye->DrawCopy();
+      if(GetGEreso()) GetGEreso()->Draw("l");
+      if(GetGEbias()) GetGEbias()->Draw("l");
+      
+      TLegend* hleg2 = new TLegend(0.30, 0.69, 0.55, 0.89);
+      hleg2->SetFillColor(0);
+      hleg2->SetMargin(0.40);
+      hleg2->SetBorderSize(0);
+      if(GetGEreso()) hleg2->AddEntry(GetGEreso(),"Resolution","L");
+      if(GetGEbias()) hleg2->AddEntry(GetGEbias(),"Bias","LP");
+      hleg2->Draw();
+      delete dummye;
+    }
+
+  gPad->SetGrid();
+  gPad->Modified();
+  gPad->Update();
+
+  /////////////////////////////////////////////////
+  // CD(4) On and Off residuals wrt background model
+  /////////////////////////////////////////////////
+  canvas->cd(4);
+  TH2D* hResidualsOn  = NULL;
+  TH2D* hResidualsOff = NULL;
+  /*if(hdNdEpBkg && hOn && hOff)
+    {
+      //hResidualsOn  =  GetResidualsHisto(hdNdEpBkg,hOn);
+      //hResidualsOff =  GetResidualsHisto(hdNdEpBkg,hOff); //TODO GetResidulasin 2D!!!
+    }
+  else if(hOff && hOn)
+    //hResidualsOn  =  GetResidualsHisto(hOff,hOn);
+  else
+    cout << "Iact1dUnbinnedLkl::PlotHistosAndData Warning: there is some problem computing residuals, missing information!" << endl;*/
+
+cout << "TEST25" << endl;
+  if(hResidualsOn)
+    {
+      //dummya->SetMinimum(TMath::Min(hResidualsOn->GetMinimum(),-3.));
+      //dummya->SetMaximum(TMath::Max(hResidualsOn->GetMaximum(),3.));
+    }
+  dummya->SetTitle("Residuals");
+  dummya->SetXTitle("log_{10}(E' [GeV])");
+  /*if(hdNdEpBkg)
+    dummya->SetYTitle("(Data-dN/dE')/ #Delta Data");
+  else
+    dummya->SetTitle("(On-Off)/ #Delta On");*/
+  /*dummya->DrawCopy();
+  if(hdNdEpBkg && hOn && hOff)
+    {
+      hResidualsOn->SetLineColor(4);
+      hResidualsOn->SetMarkerColor(4);
+      hResidualsOn->SetMarkerStyle(8);
+      hResidualsOn->SetMarkerSize(0.5);  
+      //hResidualsOn->DrawCopy("esame");
+      hResidualsOff->SetLineColor(2);
+      hResidualsOff->SetMarkerColor(2);
+      hResidualsOff->SetMarkerStyle(8);
+      hResidualsOff->SetMarkerSize(0.5);  
+      //hResidualsOff->DrawCopy("esame");
+    }
+  else if(hOff && hOn)
+    //hResidualsOn->DrawCopy("esame");*/
+  
+  gPad->SetGrid();
+  gPad->Modified();
+  gPad->Update();
+
+ 
+cout << "TEST26" << endl;
+  /////////////////////////
+  // CD(5) dN/dE for signal
+  /////////////////////////
+  canvas->cd(5);
+  dummya->SetMinimum(1e-7);
+  dummya->SetMaximum(1e0);
+  dummya->SetTitle("dN/dE for signal events");
+  dummya->SetXTitle("log_{10}(E [GeV])");
+  dummya->SetYTitle("dN/dE [GeV^{-1}]");
+  dummya->DrawCopy();
+  TH2D* hdNdESignal = NULL;
+
+  if(fHdNdESignalLIV)
+    {
+      hdNdESignal = new TH2D(*fHdNdESignalLIV);
+      hdNdESignal->SetDirectory(0);
+      
+      Double_t scale = GetdNdESignalIntegral();     
+      hdNdESignal->Scale(scale);
+      //hdNdESignal->SetLineWidth(1);
+      //hdNdESignal->SetLineStyle(1);
+      //hdNdESignal->SetLineColor(1);
+      //hdNdESignal->DrawCopy("hist same");
+      hdNdESignal->DrawCopy("colz");
+    }
+  //gPad->SetGrid();
+  //gPad->SetLogy();
+  gPad->Modified();
+  gPad->Update();
+
+  //////////////////////////
+  // CD(6) dN/dE' for signal
+  //////////////////////////
+  canvas->cd(6);
+  //dummya->SetMinimum(1e2);
+  //dummya->SetMaximum(1e8);
+  dummya->SetTitle("dN/dE' (#times Aeff) for signal events");
+  dummya->SetXTitle("t [s]");
+  dummya->SetYTitle("log_{10}(E' [GeV])");
+  //dummya->SetZTitle("dN/dE'(#times A_{eff}) [GeV^{-1}cm^{2}]");
+  dummya->DrawCopy();
+
+  TH2D* hdNdEpSignal = NULL;
+  if(fHdNdEpSignal)
+    {
+      hdNdEpSignal = new TH2D(*fHdNdEpSignal);
+      hdNdEpSignal->SetDirectory(0);
+
+      Double_t scale = GetdNdEpSignalIntegral();
+      hdNdEpSignal->Scale(scale);      
+      //hdNdEpSignal->DrawCopy("hist same");
+      hdNdEpSignal->DrawCopy("colz");
+    }
+
+  TH2D* hdNdEpSignalOff = NULL;
+  if(fHdNdEpSignalOff)
+    {
+      hdNdEpSignalOff = new TH2D(*fHdNdEpSignalOff);
+      hdNdEpSignalOff->SetDirectory(0);
+      
+      Double_t scale = GetdNdEpSignalOffIntegral();
+      hdNdEpSignalOff->Scale(scale);
+      //hdNdEpSignalOff->SetLineStyle(2);
+      //hdNdEpSignalOff->Draw("hist same");
+    }
+  
+  //gPad->SetGrid();
+  //gPad->SetLogy();
+  //gPad->SetLogz();
+  gPad->Modified();
+  gPad->Update();
+
+  //////////////////////////
+  // CD(7) dN/dE' for signal off
+  //////////////////////////
+  canvas->cd(7);
+  dummya->DrawCopy();
+  if(fHdNdEpSignalOff)
+    {
+      hdNdEpSignalOff = new TH2D(*fHdNdEpSignalOff);
+      hdNdEpSignalOff->SetDirectory(0);
+      
+      Double_t scale = GetdNdEpSignalOffIntegral();
+      hdNdEpSignalOff->Scale(scale);
+      //hdNdEpSignalOff->SetLineStyle(2);
+      hdNdEpSignalOff->Draw("colz");
+    }
+  
+  // clean and exit
+  if(hdNdEpBkg) delete hdNdEpBkg;
+  //if(hdNdEpFrg) delete hdNdEpFrg;
+  if(hdNdESignal) delete hdNdESignal;
+  if(hdNdEpSignal) delete hdNdEpSignal;
+  if(hdNdEpSignalOff) delete hdNdEpSignalOff;
+  delete hOn;
+  delete hOff;
+  if(hResidualsOn)  delete hResidualsOn;
+  if(hResidualsOff) delete hResidualsOff;
+  delete dummya;
+}
 ////////////////////////////////////////////////////////////////////////
 //
 // Likelihood function (-2logL) 

@@ -39,10 +39,13 @@ class IactUnbinnedLivLkl : public Iact1dUnbinnedLkl//, public virtual Lkl
   inline const Double_t* GetOffSampleTime()    const {return fOffSampleTime;}
 
   inline const TH2D*    GetHdNdEpSignal()     const {return fHdNdEpSignal;}
-  inline const TH2D*    GetHdNdEpBkg()        const {return fHdNdEpBkg;}
+  inline TH2D*    GetHdNdEpBkg()        const {return fHdNdEpBkg;}
   Double_t GetdNdEpSignalIntegral()    {CheckHistograms(kFALSE); if(!fHdNdEpSignal) return 0; return fHdNdEpSignal->GetBinContent(0);}
 
   Int_t        NormalizedNdEHisto(TH2D* histo);
+
+  // Plots
+  void PlotHistosAndData(TCanvas* canvas);
 
   //virtual Int_t SimulateDataSamples(UInt_t seed=0,Float_t meanG=0);
   //virtual Int_t GetRealBkgAndGoffHistos(TRandom3* rdm,TH2F*& hdNdEpBkg,TH2F*& hdNdEpSignalOff);
