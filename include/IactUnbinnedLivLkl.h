@@ -7,6 +7,7 @@
 
 #include "Lkl.h"
 #include "Iact1dUnbinnedLkl.h"
+#include "HdNdE.h"
 
 class IactUnbinnedLivLkl : public Iact1dUnbinnedLkl//, public virtual Lkl
 {
@@ -22,9 +23,11 @@ class IactUnbinnedLivLkl : public Iact1dUnbinnedLkl//, public virtual Lkl
   Int_t ResetdNdESignal();
   Int_t SetdNdESignalFunction(TString function,Float_t p0=0,Float_t p1=0,Float_t p2=0,Float_t p3=0,Float_t p4=0,Float_t p5=0,Float_t p6=0,Float_t p7=0,Float_t p8=0,Float_t p9=0);
   Int_t AdddNdESignalFunction(TString function,Float_t p0=0,Float_t p1=0,Float_t p2=0,Float_t p3=0,Float_t p4=0,Float_t p5=0,Float_t p6=0,Float_t p7=0,Float_t p8=0,Float_t p9=0);
+  //Int_t    SetdNdESignalFunction(TString function,Double_t p0=0,Double_t p1=0,Double_t p2=0,Double_t p3=0,Double_t p4=0,Double_t p5=0,Double_t p6=0,Double_t p7=0,Double_t p8=0,Double_t p9=0);
+  //Int_t    AdddNdESignalFunction(TString function,Double_t p0=0,Double_t p1=0,Double_t p2=0,Double_t p3=0,Double_t p4=0,Double_t p5=0,Double_t p6=0,Double_t p7=0,Double_t p8=0,Double_t p9=0);
 
-  virtual TH2D*   GetHdNdEpOn(Bool_t isDifferential=kTRUE,Int_t nbinsE=0,Int_t nbinsT=0)  const;
-  virtual TH2D*   GetHdNdEpOff(Bool_t isDifferential=kTRUE,Int_t nbinsE=0,Int_t nbinsT=0) const;
+  TH2D*   GetHdNdEpOn(Bool_t isDifferential=kTRUE,Int_t nbinsE=0,Int_t nbinsT=0)  const;
+  TH2D*   GetHdNdEpOff(Bool_t isDifferential=kTRUE,Int_t nbinsE=0,Int_t nbinsT=0) const;
 
   // print data in the overview
   virtual void PrintOverview(Int_t level=0)  {Lkl::PrintOverview(level);}
@@ -34,12 +37,15 @@ class IactUnbinnedLivLkl : public Iact1dUnbinnedLkl//, public virtual Lkl
   // getters
   inline       Double_t  GetTmin()             const {return fTMin;}
   inline       Double_t  GetTmax()             const {return fTMax;}
+  inline       Double_t  GetEmin()             const {return fEMinLIV;}
+  inline       Double_t  GetEmax()             const {return fEMaxLIV;}
   inline const Double_t* GetOnSampleEnergy()     const {return fOnSampleEnergy;}
   inline const Double_t* GetOnSampleTime()     const {return fOnSampleTime;}
   inline const Double_t* GetOffSampleTime()    const {return fOffSampleTime;}
 
   inline const TH2D*    GetHdNdEpSignal()     const {return fHdNdEpSignal;}
   inline TH2D*    GetHdNdEpBkg()        const {return fHdNdEpBkg;}
+  Double_t GetdNdESignalIntegral()    {CheckHistograms(kFALSE); if(!fHdNdESignalLIV) return 0; return fHdNdESignalLIV->GetBinContent(0);}
   Double_t GetdNdEpSignalIntegral()    {CheckHistograms(kFALSE); if(!fHdNdEpSignal) return 0; return fHdNdEpSignal->GetBinContent(0);}
 
   Int_t        NormalizedNdEHisto(TH2D* histo);
@@ -60,11 +66,14 @@ class IactUnbinnedLivLkl : public Iact1dUnbinnedLkl//, public virtual Lkl
 
  private:  
   Double_t* fOnSampleEnergy;     //-> array of measured energy for On events 
+  Double_t* fOffSampleEnergy;     //-> array of measured energy for Off events
   Double_t* fOnSampleTime;       //-> array of measured time for On events 
   Double_t* fOffSampleTime;      //-> array of measured time for Off events
 
   Double_t  fTMin;               // [s] Minimum measured time of considered events
   Double_t  fTMax;               // [s] Maximum measured time of considered events
+  Double_t  fEMinLIV;            // [GeV] Minimum measured energy of considered events
+  Double_t  fEMaxLIV;            // [GeV] Maximum measured energy of considered events
  
   Double_t  fZ;                  // [] Redshift of the source
   Double_t  fDz;                 // [] Redshift error of the source

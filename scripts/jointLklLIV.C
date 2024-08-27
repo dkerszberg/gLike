@@ -78,10 +78,10 @@
 #include "TROOT.h"
 #include "TSystem.h"
 
-#include "Iact1dUnbinnedLkl.h"
-#include "Iact1dBinnedLkl.h"
-#include "FermiTables2016Lkl.h"
-#include "GloryDuckTables2019Lkl.h"
+//#include "Iact1dUnbinnedLkl.h"
+//#include "Iact1dBinnedLkl.h"
+//#include "FermiTables2016Lkl.h"
+//#include "GloryDuckTables2019Lkl.h"
 #include "JointLkl.h"
 #include "IactUnbinnedLivLkl.h"
 #include "IactBinnedLivLkl.h"
@@ -635,6 +635,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	// loop over samples
 	for(Int_t isample=0;isample<nsamples;isample++)
 	  {
+      cout << "Samlple i = " << isample << endl;
 	    IactUnbinnedLivLkl* fullLkl = dynamic_cast<IactUnbinnedLivLkl*>(sample[isample]);
 	    //IactUnbinnedLivLkl* fullLkl = sample[isample];
 	    
@@ -644,7 +645,9 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 		//hadcanvas[isample]->SetName(Form("hadcanvas_%d",isample));
 		//hadcanvas[isample]->SetTitle(Form("IRFs and data for sample %d",isample));
                 hadcanvas[isample] = new TCanvas(Form("hadcanvas_%d",isample),Form("IRFs and data for sample %d",isample), 1000, 1500);
+                cout << "Plotting samlple i = " << isample << endl;
 		fullLkl->PlotHistosAndData(hadcanvas[isample]);
+    cout << "End of plotting samlple i = " << isample << endl;
 		/*hadcanvas[isample]->cd(5);
 		TLatex* ltchannel;
 		//if(nChannels == 1) ltchannel = new TLatex(0.8,0.8,strchannel);
@@ -687,8 +690,8 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
       if(!lkl[0]->ComputeLklVsG())
         {
           //cout << " *** Skipping DM mass = " << mass << " GeV because checks were not successfull (maybe none of the samples will produce any signal event?)" << endl;
-          svLimVal[1] = 0.;
-          svSenVal[1] = 0.;
+          svLimVal[0] = 0.;
+          svSenVal[0] = 0.;
           //braneTensionVal[imass] = 0.;
           //continue;
         }
@@ -753,7 +756,7 @@ void jointLklLIV(TString configFileName="$GLIKESYS/rcfiles/jointLklLIV.rc",Int_t
 	  
 	  // plot empty histo with nice settings to hold the -2logLkl parabolas
 	  //TString dummytit = Form(parabolaplotform,mass);
-	  TString dummytit = Form(parabolaplotform);
+	  TString dummytit = Form("%s",parabolaplotform.Data());
 	  //TH1I *dymmyparabola = new TH1I(Form("dummyparabola_%d",imass),dummytit,1,grLklParabola[imass]->GetX()[0],grLklParabola[imass]->GetX()[grLklParabola[imass]->GetN()-1]);
 	  TH1I *dymmyparabola = new TH1I(Form("dummyparabola"),dummytit,1,grLklParabola->GetX()[0],grLklParabola->GetX()[grLklParabola->GetN()-1]);
 	  dymmyparabola->SetDirectory(0);
