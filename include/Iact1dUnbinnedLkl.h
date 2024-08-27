@@ -77,14 +77,14 @@ class Iact1dUnbinnedLkl : public virtual Lkl, public HdNdE
   inline TH2F*    GetMigMatrix()        const {return fMigMatrix;}
   inline Float_t  GetLogJ()             const {return fLogJ;}
 
-  inline  Double_t GetdNdESignalIntegral()    {if(!fHdNdESignal) return 0;NormalizedNdEHisto(fHdNdESignal);return fHdNdESignal->GetBinContent(0);}
+  inline Double_t GetdNdESignalIntegral()    {if(!fHdNdESignal) return 0;NormalizedNdEHisto(fHdNdESignal);return fHdNdESignal->GetBinContent(0);}
   inline Double_t GetdNdEpBkgIntegral()       {if(!fHdNdEpBkg) return 0; NormalizedNdEHisto(fHdNdEpBkg); return fHdNdEpBkg->GetBinContent(0);}
   inline Double_t GetdNdEpFrgIntegral()       {if(!fHdNdEpFrg) return 0; NormalizedNdEHisto(fHdNdEpFrg); return fHdNdEpFrg->GetBinContent(0);}
   inline Double_t GetdNdEpSignalIntegral()    {CheckHistograms(kFALSE); if(!fHdNdEpSignal) return 0; return fHdNdEpSignal->GetBinContent(0);}
   inline Double_t GetdNdEpSignalOffIntegral() {if(!fHdNdEpSignalOff) return 0; return fHdNdEpSignalOff->GetBinContent(0);}
 
-  virtual TH1F*   GetHdNdEpOn(Bool_t isDifferential=kTRUE,Int_t nbins=0)  const;
-  virtual TH1F*   GetHdNdEpOff(Bool_t isDifferential=kTRUE,Int_t nbins=0) const;
+  TH1F*   GetHdNdEpOn(Bool_t isDifferential=kTRUE,Int_t nbins=0)  const;
+  TH1F*   GetHdNdEpOff(Bool_t isDifferential=kTRUE,Int_t nbins=0) const;
   
   // Read input dN/dE files and related function
   Int_t ReaddNdEpSignal(TString filename);
@@ -95,7 +95,7 @@ class Iact1dUnbinnedLkl : public virtual Lkl, public HdNdE
   Int_t ResetHdNdEpBkg() {if(fHdNdEpBkg) delete fHdNdEpBkg; fHdNdEpBkg=NULL; return 0;}
   Int_t SetTrueTau(Float_t truetau) {fTrueTau=truetau; return 0;}
 
-  virtual Int_t SimulateDataSamples(Float_t meanGwithUnits=0,TRandom* rdm=NULL);
+  Int_t SimulateDataSamples(Float_t meanGwithUnits=0,TRandom* rdm=NULL);
 
   // print data in the overview
   virtual void PrintData(Int_t level=0);
@@ -107,8 +107,8 @@ class Iact1dUnbinnedLkl : public virtual Lkl, public HdNdE
   virtual Int_t   ResetdNdESignal();
 
  protected:
-          Int_t    InterpretInputString(TString inputString);
-  virtual Int_t    GetRealBkgAndGoffHistos(TRandom* rdm,TH1F*& hdNdEpBkg,TH1F*& hdNdEpSignalOff);
+  Int_t    InterpretInputString(TString inputString);
+  Int_t    GetRealBkgAndGoffHistos(TRandom* rdm,TH1F*& hdNdEpBkg,TH1F*& hdNdEpSignalOff);
 
   virtual Bool_t   IsChecked() const                   {return Lkl::IsChecked() & HdNdE::IsHdNdESignalChecked();}
   virtual void     SetChecked(Bool_t status=kTRUE)     {Lkl::SetChecked(status); HdNdE::SetHdNdESignalChecked(status);}
