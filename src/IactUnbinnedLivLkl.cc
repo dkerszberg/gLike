@@ -226,8 +226,12 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
   Double_t OffMaxEnergy = 1.;
 
 	// open and read input files with data and IRFs
-	TFile* ifile = new TFile(path+(path==""?"":"/")+inputfileName,"READ");
-	IactEventListIrf* dataSet = (IactEventListIrf*) ifile->Get("IactEventListIrf");
+	//TFile* ifile = new TFile(path+(path==""?"":"/")+inputfileName,"READ");
+	//IactEventListIrf* dataSet = (IactEventListIrf*) ifile->Get("IactEventListIrf");
+
+	// open and read input files with data and IRFs
+	IactEventListIrf* dataSet = new IactEventListIrf("dataSet", "", path+(path==""?"":"/")+inputfileName);
+
 	if(!dataSet)
 	{
 		cout << "IactUnbinnedLivLkl::InterpretInputString Warning: no IactEventListIrf object in file " << inputfileName << endl;
@@ -261,20 +265,28 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
 		//TRandom3* generator = new TRandom3();
     dataSet->GetOnEntry(0);
     dataSet->GetOffEntry(0);
-    FirstEventTimeMJD_On = TMath::Floor(eventOnT);
+    /*FirstEventTimeMJD_On = TMath::Floor(eventOnT);
     FirstEventTimeMJD_Off = TMath::Floor(eventOffT);
-    FirstEventTimeMJD_All = TMath::Min(TMath::Floor(eventOnT),TMath::Floor(eventOffT));
+    FirstEventTimeMJD_All = TMath::Min(TMath::Floor(eventOnT),TMath::Floor(eventOffT));*/ // for simulations 02/2025
+    FirstEventTimeMJD_On = TMath::Floor(eventOnT/86400.)*86400;
+    FirstEventTimeMJD_Off = TMath::Floor(eventOffT/86400.)*86400;
+    FirstEventTimeMJD_All = TMath::Min(TMath::Floor(eventOnT/86400.)*86400,TMath::Floor(eventOffT/86400.)*86400);
 
 		for(Int_t i=0;i<GetNon();i++)
 		{
 			dataSet->GetOnEntry(i);
 			//if(i==0) FirstEventTimeMJD_On = TMath::Floor(eventOnT);
 			//fOnSampleTime[i]=(eventOnT-FirstEventTimeMJD_On)*86400;
-      fOnSampleTime[i]=(eventOnT-FirstEventTimeMJD_All)*86400;
+      //fOnSampleTime[i]=(eventOnT-FirstEventTimeMJD_All)*86400; // for simulations 02/2025
+      if ((eventOnT-FirstEventTimeMJD_All) < 43200.)
+        fOnSampleTime[i]=(eventOnT-FirstEventTimeMJD_All) + 86400;
+      else
+        fOnSampleTime[i]=(eventOnT-FirstEventTimeMJD_All);
       fOnSampleEnergy[i]=eventOnE;
       if(eventOnE<OnMinEnergy) OnMinEnergy = eventOnE;
       if(eventOnE>OnMaxEnergy) OnMaxEnergy = eventOnE;
-      if(i==0) cout << setprecision(8) << "First ON event time = " << eventOnT << " and FirstEventTimeMJD_On = " << FirstEventTimeMJD_On << " and fOnSampleTime[0] = " << fOnSampleTime[0] << endl;
+      if(i==0) cout << setprecision(14) << "First ON event time = " << eventOnT << " and FirstEventTimeMJD_On / All = " << FirstEventTimeMJD_On << " / " << FirstEventTimeMJD_All << " and fOnSampleTime[0] = " << fOnSampleTime[0] << endl;
+      else cout << setprecision(14) << i << "th ON event time = " << eventOnT << " and FirstEventTimeMJD_On = " << FirstEventTimeMJD_On << " and fOnSampleTime[i] = " << fOnSampleTime[i] << endl;
 			//fOnSampleTime[i] = eventOnT*86400;
 			/*if(i==0) fTMin = (eventOnT-58497.)*86400.;
 			  if(i==(GetNon()-1)) fTMax = (eventOnT-58497.)*86400.;
@@ -291,11 +303,16 @@ Int_t IactUnbinnedLivLkl::InterpretInputString(TString inputString)
 			dataSet->GetOffEntry(i);
 			//if(i==0) FirstEventTimeMJD_Off = TMath::Floor(eventOffT);
       //fOffSampleTime[i]=(eventOffT-FirstEventTimeMJD_Off)*86400;
-      fOffSampleTime[i]=(eventOffT-FirstEventTimeMJD_All)*86400;
+      //fOffSampleTime[i]=(eventOffT-FirstEventTimeMJD_All)*86400; // for simulations 02/2025
+      if ((eventOffT-FirstEventTimeMJD_All) < 43200.)
+        fOffSampleTime[i]=(eventOffT-FirstEventTimeMJD_All) + 86400;
+      else
+        fOffSampleTime[i]=(eventOffT-FirstEventTimeMJD_All);
       fOffSampleEnergy[i]=eventOffE;
       if(eventOffE<OffMinEnergy) OffMinEnergy = eventOffE;
       if(eventOffE>OffMaxEnergy) OffMaxEnergy = eventOffE;
-      if(i==0) cout << setprecision(8) << "First OFF event time = " << eventOffT << " and FirstEventTimeMJD_Off = " << FirstEventTimeMJD_Off << " and fOffSampleTime[0] = " << fOffSampleTime[0] << endl; 
+      if(i==0) cout << setprecision(14) << "First OFF event time = " << eventOffT << " and FirstEventTimeMJD_Off = " << FirstEventTimeMJD_Off << " and fOffSampleTime[0] = " << fOffSampleTime[0] << endl; 
+      else cout << setprecision(14) << i << "th OFF event time = " << eventOffT << " and FirstEventTimeMJD_Off = " << FirstEventTimeMJD_Off << " and fOffSampleTime[i] = " << fOffSampleTime[i] << endl;
 			//fOffSampleTime[i] = eventOffT*86400;
 			//cout << setprecision(20) << " off " << i << " t = " << eventOffT << endl;
 			/*fOffSampleTime[i] = (eventOffT-58497.)*24.*60.*60. - fTMin + 62.1;
@@ -1334,6 +1351,12 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
 	Double_t realTmax;//  = fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(ibinmax+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(ibinmax+1);
 	Double_t dt;//        = realTmax-realTmin;
   Double_t dt_integral_up, dt_integral_low;
+  Double_t dt_integral_up_2, dt_integral_low_2;
+  Double_t dt_integral_up_3, dt_integral_low_3;
+  Double_t dt_integral_up_4, dt_integral_low_4;
+  Double_t dt_integral_up_5, dt_integral_low_5;
+  Double_t dt_integral_up_6, dt_integral_low_6;
+  Double_t dt_integral_up_7, dt_integral_low_7;
 	Double_t t;//        = realTmax-realTmin;
 	cout << "ibinmin = " << ibinmin << " and ibinmax = " << ibinmax << endl;
 
@@ -1345,9 +1368,47 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
 		//dt = realTmax-realTmin;
 		//dt = (TMath::Power(realTmax,1.) - TMath::Power(realTmin,1.))/1.; //commented 4-9-2021;time is not flat it's gaussian so we need that integration
 		//dt=/*fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)+*/0.5*(TMath::Erf((realTmax-(600+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)))/((150+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0))*TMath::Sqrt(2)))- TMath::Erf((realTmin-(600+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)))/((150+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0))*TMath::Sqrt(2))));
-    dt_integral_up=TMath::Erf((realTmax-(1600+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)))/((150)*TMath::Sqrt(2)));
-    dt_integral_low=TMath::Erf((realTmin-(1600+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)))/((150)*TMath::Sqrt(2)));
-    dt=0.5*(dt_integral_up-dt_integral_low);
+
+
+    //dt_integral_up=TMath::Erf((realTmax-(1600+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)))/((150)*TMath::Sqrt(2))); // for simulations 02/2025
+    //dt_integral_low=TMath::Erf((realTmin-(1600+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)))/((150)*TMath::Sqrt(2))); // for simulation 02/2025
+    //dt_integral_up=TMath::Erf((realTmax-(1600+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)))/((1500)*TMath::Sqrt(2))); // for simulations 03/2025
+    //dt_integral_low=TMath::Erf((realTmin-(1600+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)))/((1500)*TMath::Sqrt(2))); // for simulation 03/2025
+
+    /* Fine for LST 2021 BL Lac*/
+    dt_integral_up=0.4721*TMath::Erf((realTmax-(86900+2752))/((385.7)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low=0.4721*TMath::Erf((realTmin-(86900+2752))/((385.7)*TMath::Sqrt(2))); // for simulation 04/2025
+    dt_integral_up_2=(1.-0.4721)*TMath::Erf((realTmax-(86900+4573))/((777.4)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low_2=(1.-0.4721)*TMath::Erf((realTmin-(86900+4573))/((777.4)*TMath::Sqrt(2))); // for simulation 04/2025
+
+    /*dt_integral_up=0.109*TMath::Erf((realTmax-(80800+2099))/((210.)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low=0.109*TMath::Erf((realTmin-(80800+2099))/((210.)*TMath::Sqrt(2))); // for simulation 04/2025
+    dt_integral_up_2=(0.219)*TMath::Erf((realTmax-(80800+2836))/((143.)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low_2=(0.219)*TMath::Erf((realTmin-(80800+2836))/((143.)*TMath::Sqrt(2))); // for simulation 04/2025
+    dt_integral_up_3=(0.182)*TMath::Erf((realTmax-(80800+4618))/((219.)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low_3=(0.182)*TMath::Erf((realTmin-(80800+4618))/((219.)*TMath::Sqrt(2))); // for simulation 04/2025
+    dt_integral_up_4=(0.314)*TMath::Erf((realTmax-(80800+5709))/((105.)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low_4=(0.314)*TMath::Erf((realTmin-(80800+5709))/((105.)*TMath::Sqrt(2))); // for simulation 04/2025
+    dt_integral_up_5=(0.176)*TMath::Erf((realTmax-(80800+6422))/((808.)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low_5=(0.176)*TMath::Erf((realTmin-(80800+6422))/((808.)*TMath::Sqrt(2))); // for simulation 04/2025*/
+
+    dt_integral_up_3=0.109*TMath::Erf((realTmax-(80800+2099))/((210.)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low_3=0.109*TMath::Erf((realTmin-(80800+2099))/((210.)*TMath::Sqrt(2))); // for simulation 04/2025
+    dt_integral_up_4=(0.219)*TMath::Erf((realTmax-(80800+2836))/((143.)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low_4=(0.219)*TMath::Erf((realTmin-(80800+2836))/((143.)*TMath::Sqrt(2))); // for simulation 04/2025
+    dt_integral_up_5=(0.182)*TMath::Erf((realTmax-(80800+4618))/((219.)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low_5=(0.182)*TMath::Erf((realTmin-(80800+4618))/((219.)*TMath::Sqrt(2))); // for simulation 04/2025
+    dt_integral_up_6=(0.314)*TMath::Erf((realTmax-(80800+5709))/((105.)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low_6=(0.314)*TMath::Erf((realTmin-(80800+5709))/((105.)*TMath::Sqrt(2))); // for simulation 04/2025
+    dt_integral_up_7=(0.176)*TMath::Erf((realTmax-(80800+6422))/((808.)*TMath::Sqrt(2))); // for simulations 04/2025
+    dt_integral_low_7=(0.176)*TMath::Erf((realTmin-(80800+6422))/((808.)*TMath::Sqrt(2))); // for simulation 04/2025
+
+    //dt=0.5*(dt_integral_up-dt_integral_low);
+    dt=(dt_integral_up-dt_integral_low) + (dt_integral_up_2-dt_integral_low_2) + (dt_integral_up_3-dt_integral_low_3) + (dt_integral_up_4-dt_integral_low_4) + (dt_integral_up_5-dt_integral_low_5) + (dt_integral_up_6-dt_integral_low_6) + (dt_integral_up_7-dt_integral_low_7);
+    //dt=(dt_integral_up-dt_integral_low) + (dt_integral_up_2-dt_integral_low_2) + (dt_integral_up_3-dt_integral_low_3) + (dt_integral_up_4-dt_integral_low_4) + (dt_integral_up_5-dt_integral_low_5);
+    //dt=(dt_integral_up-dt_integral_low) + (dt_integral_up_2-dt_integral_low_2);
+
+
 		//dt=/*fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)*/+0.5*(TMath::Erf((realTmax-(600+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)))/((150)*TMath::Sqrt(2)))- TMath::Erf((realTmin-(600+fHdNdESignalLIV->GetXaxis()->GetBinLowEdge(0)))/((150)*TMath::Sqrt(2))));	
 		cout << "realTmax = " << realTmax << "realTmin = " << realTmin << "dt = " << dt << endl;
 		t = (realTmax+realTmin)/2.;
@@ -1357,7 +1418,11 @@ Int_t IactUnbinnedLivLkl::AdddNdESignalFunction(TString function,Float_t p0,Floa
 			realEmax = TMath::Power(10,fHdNdESignalLIV->GetYaxis()->GetBinLowEdge(jbin+1)+fHdNdESignalLIV->GetYaxis()->GetBinWidth(jbin+1));
 			dE = realEmax-realEmin;
 			E = (realEmax+realEmin)/2.;
-			Double_t dE_model = (TMath::Power(realEmax,-1.0) - TMath::Power(realEmin,-1.0))/-1.0; //Hardcoded: integration of E with slope -2 for signal
+			//Double_t dE_model = (TMath::Power(realEmax,-1.0) - TMath::Power(realEmin,-1.0))/-1.0; //Hardcoded: integration of E with slope -2 for signal
+    			/* Fine for LST 2021 BL Lac*/
+			//Double_t dE_model = (TMath::Power(realEmax,-2.44) - TMath::Power(realEmin,-2.44))/-2.44; //Hardcoded: integration of E with slope -3.44 for signal
+			
+			Double_t dE_model = TMath::Exp(-3.27 -0.09) * dE * TMath::Power(1./150.,-3.27-2.*0.09-0.09*TMath::Log(1./150.)); //Hardcoded: integration of E for log-parabola
 			fHdNdESignalLIV->SetBinContent(ibin+1,jbin+1,dE_model*dt);
 		}
 	}
@@ -2032,37 +2097,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
 	fpar*=1;
 	iflag*=1;
 
-	/*Double_t stepLog = TMath::Exp((TMath::Log(50000) - TMath::Log(5.))/(30.));
-	  Double_t boundaries[30+1];
-	  boundaries[0] = 5.;
-	  for (int i = 1 ; i < 30 ; i++){
-	  boundaries[i] = boundaries[i-1]*stepLog;
-	  }
-	  boundaries[30] = 50000.;
-
-	  for (int i=0; i < 30; i++) {
-	  Double_t energ = (TMath::Log10(boundaries[i])+TMath::Log10(boundaries[i+1]))/2.;
-	//ST0302
-	//cout << (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*energ*energ "   ";
-	//ST0303
-	//cout << (1.16033e+00)+(-5.49942e-01)*energ+(6.77807e-02)*energ*energ "   " ;
-	//ST0306
-	//cout << (1.21740e+00)+(-6.29997e-01)*energ+(8.74824e-02)*energ*energ "   " ;
-	//ST0307
-	//cout << (8.15351e-01 )+(-3.59342e-01)*energ+(4.20904e-02)*energ*energ "   " ;
-	//ST0310
-	//cout << (1.68368e+00)+(-7.95249e-01)*energ+(9.82831e-02)*energ*energ << "   " ;
-	//ST0311
-	//cout << energ << "   " << (7.43831e-01)+(-2.74945e-01)*energ+(3.82371e-02)*energ*energ << ",   " ;
-	}*/
-
-
-	//Double_t x[101], y[101];
-	//Double_t eta_inject = 1.;
-
 	IactUnbinnedLivLkl* mylkl           = dynamic_cast<IactUnbinnedLivLkl*>(minuit->GetObjectFit());
-	//Double_t old_lkl[mylkl->GetNon()];
-	//Double_t new_lkl[mylkl->GetNon()];
 
 	const Float_t*      onSample        = mylkl->GetOnSample();
 	//const Double_t*      onSample        = mylkl->GetOnSampleEnergy();
@@ -2071,9 +2106,9 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
 	const Double_t*     offSampleTime   = mylkl->GetOffSampleTime();
 	UInt_t              Non             = mylkl->GetNon();
 	UInt_t              Noff            = mylkl->GetNoff();
-	//Float_t             tau             = mylkl->GetTau();
+	Float_t             tau             = mylkl->GetTau();
 	//Float_t             tau             = 3.;
-	Float_t             tau             = 1.;
+	//Float_t             tau             = 1.; // for simulations 02/2025
 	Float_t             dTau            = mylkl->GetDTau();
 	Double_t              eta             = par[0];
 	if(verbose_test) cout << "ETA = " << eta << " is it changing?" << endl;
@@ -2088,30 +2123,6 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
 
 	if(verbose_test) cout << "Emin = " << realEmin << " Emax = " << realEmax << endl;
 	if(verbose_test) cout << "Tmin = " << onSampleTime[0] << " Tmax = " << onSampleTime[Non-1] << endl;
-
-	//mylkl->SetdNdESignalFunction("",250.,2000.,0.,1200.,eta_inject,2.4,1.5,1.,30.,0.111);
-	//mylkl->SetdNdESignalFunction("",300.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
-	//mylkl->SetdNdESignalFunction("",100.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
-	// 24th May 2021 mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-1],eta); // skipped < 300 GeV --> Non-2
-	//mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],0.,2.4,1.5,1.,30.,0.); // skipped < 300 GeV --> Non-2
-	// for all events mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-1],0.,2.4,1.5,1.,30.,0.);
-	//mylkl->SetdNdESignalFunction("",250.,2000.,62.,1225.,0.,2.4,1.5,1.,30.,0.);	
-	//for(Double_t eta=-2.; eta<2.; eta+=0.1)
-	//for(Double_t eta=-2.; eta<2.0; eta+=0.1)
-	//for(Int_t eta=0; eta<2 /*101*/; eta++)
-	//{
-
-	// get internal object, histos, values, etc
-	//cout << "par0 = " << eta/10.-4. << endl;
-	//cout << "par0 = " << par[0] << endl;
-
-	//cout << "eta = " << eta << endl;
-
-	//mylkl->SetdNdESignalFunction("",300.,TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta/10.-4.,2.4,1.5,1.,30.,0.); // events > 300 GeV --> Non-2
-	//mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-2],eta/10.-4.,2.4,1.5,1.,30.,0.); // events > 300 GeV --> Non-2
-	// all events mylkl->SetdNdESignalFunction("",TMath::Power(10.,realEmin),TMath::Power(10.,realEmax),onSampleTime[0],onSampleTime[Non-1],eta/10.-4.,2.4,1.5,1.,30.,0.);
-	//mylkl->SetdNdESignalFunction("",225.,2000.,62.,1225.,eta/10.-4.,2.4,1.5,1.,30.,0.);
-	//mylkl->SetdNdESignalFunction("",200.,2000.,50.,1500.,par[0],2.4,1.5,0.,30.);
 
 	const TH2D*         hdNdEpSignal    = mylkl->GetHdNdEpSignal();
 	//cout << "eta = " << hdNdEpSignal << endl;
@@ -2151,6 +2162,8 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
 	//Double_t fnorm   = g+b;
 	Double_t fnorm   = Non;
 	//Double_t fnorm   = 726;
+
+	if(verbose_test) cout << "g = Non = " << g << " and Noff = " << Noff << " tau +/- dTau = " << tau << " +/- " << dTau << " so b = Noff/tau = " << b << endl;
 
 	//if(verbose_test) cout << "Non = " << Non << " g = " << g << " fnorm = " << fnorm << endl;
 	//cout << "Non = " << Non << " g = " << g << " fnorm = " << fnorm << " b = " << b << endl;
@@ -2195,6 +2208,7 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
 	Int_t skipped = 0;
 	Int_t computedLkl = 0;
 	Int_t overflow = 0;
+  Int_t norm_problem = 0;
 	// On events
 	for(ULong_t ievent=0; ievent<Non; ievent++)
 	{
@@ -2227,16 +2241,12 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
 		}
 		else
 		{
-			// cout << "Why 0? i = " << ievent << " bin = " << hdNdEpOn->FindBin(onSampleTime[ievent],onSample[ievent]) << std::setprecision(18) << " E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << " and log = " << val << " for a modified time of t' = " << onSampleTime[ievent]+0.017*eta*TMath::Power(10.,onSample[ievent]) << " with eta = " << eta << " and TMath::Power(10.,onSample[ievent]) = " << TMath::Power(10.,onSample[ievent]) << endl;
-			//f += 100.;
-			//f += 5000.;
-			f += 1e99;
+			//cout << "Why 0? i = " << ievent << " bin = " << hdNdEpOn->FindBin(onSampleTime[ievent],onSample[ievent]) << std::setprecision(18) << " E = " << onSample[ievent] << " and T = " << onSampleTime[ievent] << " and log = " << val << " for a modified time of t' = " << onSampleTime[ievent]+0.017*eta*TMath::Power(10.,onSample[ievent]) << " with eta = " << eta << " and TMath::Power(10.,onSample[ievent]) = " << TMath::Power(10.,onSample[ievent]) << endl;
+		//	f += 1e99; // for simulations 02/2025
+			f += 100; 
 			overflow++;
 		}
 	}
-
-	//cout << "eta = " << eta << " f = " << f << endl;
-	//cout << "skipped = " << skipped << endl;
 
 	// Off events
 	/*for(ULong_t ievent=0; ievent<Noff; ievent++)
@@ -2256,18 +2266,42 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
 	// nuisance tau
 	//  f += -2*TMath::Log(TMath::Gaus(1.47,1.51,0.04,kTRUE));
 
+	// nuisance mu1
+	//  f += -2*TMath::Log(TMath::Gaus(2650.,2752.,100.0,kTRUE));
+
+	// nuisance sigma1
+	//  f += -2*TMath::Log(TMath::Gaus(390.,385.7,10.0,kTRUE));
+
+	// nuisance mu2
+	//  f += -2*TMath::Log(TMath::Gaus(4700.,4573.,150.0,kTRUE));
+
+	// nuisance sigma2
+	//  f += -2*TMath::Log(TMath::Gaus(810.,777.4,20.0,kTRUE));
+
+	// nuisance amplitude
+	//  f += -2*TMath::Log(TMath::Gaus(0.49,0.4721,0.02,kTRUE));
+
+	// nuisance eta
+	//  f += -2*TMath::Log(TMath::Gaus(eta,0.,0.1,kTRUE)); // MAGIC
+	//  f += -2*TMath::Log(TMath::Gaus(eta,0.35,0.1,kTRUE)); // LST
+	  //f += -2*TMath::Log(TMath::Gaus(eta,0.4,0.2,kTRUE)); // LST+MAGIC
+	  f += -2*TMath::Log(TMath::Gaus(eta,0.,0.1,kTRUE)); // LST+MAGIC
+
 	// nuisance tau
 	//if(dTau>0)
 	//f+=-2*TMath::Log(TMath::Gaus(tauest, tau, dTau, kTRUE));
 
 	// tot Nevts and nuisance Noff
-	/*if(g+b>0)
+	if(g+b>0)
 	  f += -2*TMath::Log(TMath::Poisson(Non,g+b));
-	  else
-	  f += 0;
-	//f += 1e99;
+	else
+    {
+	    //f += 0;
+	    f += 1e99;
+      norm_problem++;
+    }
 
-	if(boff>0)
+	/*if(boff>0)
 	f += -2*TMath::Log(TMath::Poisson(Noff,boff));
 	else
 	f += 0;
@@ -2275,60 +2309,9 @@ void unbinnedLivLkl(Int_t &fpar, Double_t *gin, Double_t &f, Double_t *par, Int_
 
 	//cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!111 -2loglkl = " << f << endl;
 
+	if(verbose_test) cout << "NOW OUR STUPING STUFF is done for this one step and lkl = " << f << endl;
+	if(verbose_test) cout << "skipped = " << skipped << " computedLkl = " << computedLkl << " overflow = " << overflow << " norm_problem = " << norm_problem << endl;
+
 	delete hdNdEpOn;
 	delete hdNdEpOff;
-	//x[eta]=eta/10.-4.;
-	//y[eta]=f;
-	//}
-
-	/*Double_t min=y[0];
-	  Double_t eta_min=99.;
-	  for(int i=0;i<101;i++) {if (y[i]<min) {min=y[i]; eta_min=x[i];} cout << "i= " << i << " x = " << x[i] << " y = " << y[i] << endl;}
-	  for(int i=0;i<101;i++) {y[i]=y[i]-min;}*/
-
-	/*TLatex latex;
-
-	  TCanvas *c1 = new TCanvas("c1","A Simple Graph Example",200,10,700,500);
-	  TGraph *gr = new TGraph(101,x,y);
-	  gr->SetTitle(";#eta_{1};-2log(#lambda)");*/
-
-	/*Double_t actual_value = eta_min;
-	  Double_t testing= gr->Eval(actual_value-1)-gr->Eval(eta_min)-2.71;
-	  while(TMath::Abs(testing)>0.1)
-	  {
-	//	cout << "actual value = " << actual_value << " and testing = " << testing;
-	if(testing<0.) actual_value+=-0.01;
-	else actual_value+=+0.01;
-	//	cout << " AFTER actual value = " << actual_value << " and testing = " << testing << endl;;
-	testing= gr->Eval(actual_value)-gr->Eval(eta_min)-2.71;
-	}
-
-	cout << "lower limit = " << actual_value << endl;*/
-
-	/*Double_t actual_value_max = eta_min;
-	  Double_t testing_max= gr->Eval(actual_value_max+1)-gr->Eval(eta_min)-2.71;
-	  while(TMath::Abs(testing_max)>0.1)
-	  {
-	  cout << "actual value = " << actual_value_max << " and testing = " << testing_max;
-	  if(testing_max<0.) actual_value_max+=+0.01;
-	  else actual_value_max+=-0.01;
-	  cout << " AFTER actual value = " << actual_value_max << " and testing = " << testing_max << endl;
-	  testing_max= gr->Eval(actual_value_max)-gr->Eval(eta_min)-2.71;
-	  }
-
-	  cout << "upper limit = " << actual_value_max << endl;*/
-
-	//c1->SetLogy();
-	//gr->GetHistogram()->SetMaximum(min+16.);
-	//gr->GetHistogram()->SetMinimum(min-1.);
-	/*gr->GetHistogram()->SetMaximum(16.);
-	  gr->GetHistogram()->SetMinimum(-1.);
-	  gr->Draw("AC*");*/
-	//latex.DrawLatex(-1.,min+90.,Form("#eta_{inject} = %.1f",eta_inject));
-	//latex.DrawLatex(-1.,min+80.,Form("#eta_{rec} = %.1f",eta_min));
-	//latex.DrawLatex(-1.,min+80.,Form("#eta_{rec} = %.1f^{+%.1f}_{-%.1f}",eta_min,actual_value_max-eta_min,eta_min-actual_value));
-	//latex.DrawLatex(-1.,min+80.,Form("#eta_{rec} = %.1f^{+%.1f}",eta_min,actual_value_max-eta_min));
-	//c1->SaveAs("./plot_lkl.pdf");
-	if(verbose_test) cout << "NOW OUR STUPING STUFF is done for this one step and lkl = " << f << endl;
-	if(verbose_test) cout << "skipped = " << skipped << " computedLkl = " << computedLkl << " overflow = " << overflow << endl;
 }

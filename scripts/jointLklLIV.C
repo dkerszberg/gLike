@@ -840,7 +840,8 @@ for(int z=0; z<grLklParabola->GetN()-1; z++) cout << "z = " << z << " and parabo
   //for(Int_t imass=0;imass<nmass;imass++)
     cout << svSenVal[0] << "};" << endl;
 
-  Double_t d = DistanceParameter(0.4245, order, framework);
+  //Double_t d = DistanceParameter(0.4245, order, framework);
+  Double_t d = DistanceParameter(0.069, order, framework);
   Double_t lim = LimitOnEnergyScale(svLimVal[0], d, order);
   cout << " distance par = " << d << " and lim = " << lim << endl;
 

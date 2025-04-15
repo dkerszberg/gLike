@@ -115,7 +115,7 @@ using namespace std;
 
 // static constants
 static const Double_t gDUofGMargin  = 0.25;   // relative number of extra points taken at each side of the scanned G range
-static const Double_t gNSigma       = 2;      // number of sigmas to be covered (at least) by the likelihood parabolas
+static const Double_t gNSigma       = 4;      // number of sigmas to be covered (at least) by the likelihood parabolas
 
 
 ////////////////////////////////////////////////////////////////

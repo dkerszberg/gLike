@@ -9,7 +9,9 @@ I/O CONFIGURATION
 #################
 
 # Label to indentify this analysis (for naming plots and output files)
-jointLklLIV.Label: GenericIACT_LIV_Linear_Unbinned_GisFree_ZisNuisance
+#jointLklLIV.Label: GenericIACT_LIV_Linear_Unbinned_GisFree_ZisNuisance
+jointLklLIV.Label: BLLac-2021_LIV_Linear_Unbinned_GisFree_ZisNuisance
+#jointLklLIV.Label: BLLac-2020_LIV_Linear_Unbinned_GisFree_ZisNuisance
 
 # Configuration for plots
 jointLklLIV.showSamplePlots:   TRUE
@@ -73,7 +75,7 @@ jointLklLIV.mcG: 0
 jointLklLIV.isGpositive: FALSE
 
 # Delta(-2logLkl) for limits (2.71 = 95% CL, 4.495 = 5sigma)
-jointLklLIV.deltaLogLkl: 2.71
+jointLklLIV.deltaLogLkl: 4.495
 
 ##############################
 JOINT LIKELIHOOD CONFIGURATION
@@ -129,7 +131,124 @@ JOINT LIKELIHOOD CONFIGURATION
 #try2-eta=0.01,try3-eta=0.02, try4-eta=0.001, try5-eta=1.0 try6-eta=0.05 try7-eta=0.005 try8-eta=0.2 try9-eta=0.5
 # try10-eta=-0.01 try11-eta=-0.02 try12-eta=-1 try13-eta=-0.001 try14-eta=-0.05 try15-eta=-0.005 try16-eta=-0.2 try17-eta=-0.5
 jointLklLIV.lklTerm000: JointLkl            -         Dz=0
-jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0    inputfile=data/root/gaussianLIVIact_dataIRF_01.root  LC="powerlaw"
+jointLklLIV.lklTerm001: JointLkl            0         Dz=0
+jointLklLIV.lklTerm002: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091822_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm003: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091823_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm004: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091824_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm005: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091825_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm006: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091826_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm007: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091827_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm008: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091828_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm009: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091829_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm010: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091830_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm011: JointLkl            0         Dz=0
+#jointLklLIV.lklTerm012: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5552_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm012: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5553_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm013: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5554_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm014: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5555_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm015: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5556_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm016: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5557_unbinned_spectrum.fits  LC="powerlaw"
+jointLklLIV.lklTerm017: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5558_unbinned_spectrum.fits  LC="powerlaw"
+
+# Combined ok!!!
+#jointLklLIV.lklTerm001: JointLkl            0         Dz=0
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091822_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm003: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091823_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm004: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091824_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm005: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091825_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm006: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091826_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm007: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091827_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm008: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091828_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm009: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091829_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm010: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091830_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm011: JointLkl            0         Dz=0
+##jointLklLIV.lklTerm012: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5552_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm012: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5553_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm013: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5554_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm014: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5555_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm015: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5556_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm016: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5557_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm017: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5558_unbinned_spectrum.fits  LC="powerlaw"
+
+#Combined
+#jointLklLIV.lklTerm001: JointLkl            0         Dz=0
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091822_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm003: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091823_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm004: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091824_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm005: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091825_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm006: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091826_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm007: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091827_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm008: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091828_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm009: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091829_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm010: IactUnbinnedLivLkl  1  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091830_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm011: JointLkl            0         Dz=0
+##jointLklLIV.lklTerm012: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5552_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm012: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5553_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm013: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5554_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm014: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5555_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm015: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5556_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm016: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5557_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm017: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5558_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm018: IactUnbinnedLivLkl 11  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5559_unbinned_spectrum.fits  LC="powerlaw"
+
+
+#MAGIC 2020 9 runs
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091822_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091823_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm003: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091824_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm004: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091825_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm005: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091826_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm006: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091827_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm007: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091828_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm008: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091829_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm009: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091830_unbinned_spectrum.fits  LC="powerlaw"
+
+#LST 2021 7 runs
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5553_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5554_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm003: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5555_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm004: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5556_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm005: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5557_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm006: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5558_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm007: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5559_unbinned_spectrum.fits  LC="powerlaw"
+
+#LST 2021 8 runs
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5552_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5553_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm003: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5554_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm004: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5555_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm005: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5556_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm006: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5557_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm007: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5558_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm008: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5559_unbinned_spectrum.fits  LC="powerlaw"
+
+
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5552_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2021/obs_id_5553_unbinned_spectrum.fits  LC="powerlaw"
+
+#MAGIC 2020 19 runs
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091822_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091823_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm003: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091824_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm004: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091825_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm005: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091826_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm006: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091827_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm007: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091828_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm008: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091829_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm009: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091830_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm010: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091831_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm011: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091832_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm012: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091833_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm013: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091834_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm014: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091835_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm015: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091836_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm016: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091837_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm017: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091838_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm018: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091839_unbinned_spectrum.fits  LC="powerlaw"
+#jointLklLIV.lklTerm019: IactUnbinnedLivLkl  0  z=0.069  Dz=0    inputfile=data/fits/BLLac-2020/obs_id_5091840_unbinned_spectrum.fits  LC="powerlaw"
+
+
+#jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0    inputfile=data/root/gaussianLIVIact_dataIRF_01.root  LC="powerlaw"
 #jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245 Dz=0     inputfile=data/root/gaussianLIVIact_dataIRF_02.root  LC="powerlaw"
 #jointLklLIV.lklTerm001: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.01    inputfile=data/root/Gaussian_try2_genericIact_dataIRF_01.root  LC="powerlaw" 
 #jointLklLIV.lklTerm002: IactUnbinnedLivLkl  0  z=0.4245  Dz=0.03     inputfile=data/root/Gaussian_try2_genericIact_dataIRF_02.root  LC="powerlaw"
