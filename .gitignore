@@ -8,3 +8,6 @@
 *_C.d
 **/my*
 build/
+.vscode/
+plots/
+DM/dNdEpSignal/
