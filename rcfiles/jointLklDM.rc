@@ -80,6 +80,7 @@ jointLklDM.isGpositive: TRUE
 
 # Delta(-2logLkl) for limits (2.71 = 95% CL, 4.495 = 5sigma)
 jointLklDM.deltaLogLkl: 2.71
+jointLklDM.deltaLogLklDetection: 4.495
 
 ##############################
 JOINT LIKELIHOOD CONFIGURATION

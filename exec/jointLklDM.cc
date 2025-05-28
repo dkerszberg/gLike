@@ -52,6 +52,7 @@
 #include "TObjArray.h"
 #include "TCanvas.h"
 #include "TGraph.h"
+#include "TLine.h"
 #include "TFile.h"
 #include "TLegend.h"
 #include "TLatex.h"
@@ -158,6 +159,7 @@ int main(int argc,char* argv[])
   Double_t plotmax           = env->GetValue("jointLklDM.plotmax",0.);
   Double_t plotScale         = env->GetValue("jointLklDM.plotScale",1.);
   Double_t deltaLogLkl       = env->GetValue("jointLklDM.deltaLogLkl",2.71);
+  Double_t deltaLogLklDetection = env->GetValue("jointLklDM.deltaLogLklDetection",4.495);
   TString  fPath             = env->GetValue("jointLklDM.path","");
   TString  fdNdEDir          = fPath+"/"+env->GetValue("jointLklDM.dNdEDir","")+"/";
   TString  fDataDir          = fPath+"/"+env->GetValue("jointLklDM.dataDir","")+"/";
@@ -578,6 +580,20 @@ int main(int argc,char* argv[])
   ///////////////////////////////////////////
   Double_t svLimVal[nmass];
   Double_t svSenVal[nmass];
+  Double_t svBestfitVal[nmass];
+  Double_t svDetectionVal[nmass];
+  Double_t svLimValLeft[nmass];
+  Double_t svDetectionValLeft[nmass];
+  Double_t sv1SigmaVal[nmass];
+  Double_t sv2SigmaVal[nmass];
+  Double_t sv3SigmaVal[nmass];
+  Double_t sv4SigmaVal[nmass];
+  Double_t sv5SigmaVal[nmass];
+  Double_t sv1SigmaValRight[nmass];
+  Double_t sv2SigmaValRight[nmass];
+  Double_t sv3SigmaValRight[nmass];
+  Double_t sv4SigmaValRight[nmass];
+  Double_t sv5SigmaValRight[nmass];
   TCanvas** hadcanvas = new TCanvas*[nsamples];
   for(Int_t isample=0;isample<nsamples;isample++)
     hadcanvas[isample] = NULL;
@@ -720,6 +736,20 @@ int main(int argc,char* argv[])
           cout << " *** Skipping DM mass = " << mass << " GeV because checks were not successfull (maybe none of the samples will produce any signal event?)" << endl;
           svLimVal[imass] = 0.;
           svSenVal[imass] = 0.;
+          svBestfitVal[imass] = 0.;
+  	  svDetectionVal[imass] = 0.;
+	  svLimValLeft[imass] = 0.;
+	  svDetectionValLeft[imass] = 0.;
+          sv1SigmaVal[imass] = 0.;
+          sv2SigmaVal[imass] = 0.;
+          sv3SigmaVal[imass] = 0.;
+          sv4SigmaVal[imass] = 0.;
+          sv5SigmaVal[imass] = 0.;
+          sv1SigmaValRight[imass] = 0.;
+          sv2SigmaValRight[imass] = 0.;
+          sv3SigmaValRight[imass] = 0.;
+          sv4SigmaValRight[imass] = 0.;
+          sv5SigmaValRight[imass] = 0.;
           continue;
         }
 
@@ -738,7 +768,34 @@ int main(int argc,char* argv[])
 	  Double_t svcutval    = svminval+lkl[0]->GetGLklMinErr();
 	  Double_t svcutvalpos = (svminval>0? svcutval : lkl[0]->GetGForLkl(lklat0+deltaLogLkl));
 	  svSenVal[imass]      = svcutval-svminval; // sensitivity
+	  std::cout << "svminval = " << svminval << ", svcutval = " << svcutval << ", svcutvalpos = " << svcutvalpos << ", lkl[0]->GetGLklMin() = " << lkl[0]->GetGLklMin() << ", lkl[0]->GetGLklMinErr() = " << lkl[0]->GetGLklMinErr() << endl;
 	  svLimVal[imass]      = (svminval>0?  svcutval : svcutvalpos); // convention used in the Fermi paper
+	  svBestfitVal[imass]  = svminval;
+  	  svDetectionVal[imass] = lkl[0]->GetGForLkl(deltaLogLklDetection);
+	  if (lklat0 > deltaLogLkl) svLimValLeft[imass] = svminval-lkl[0]->GetGLklMinErr();
+	  else svLimValLeft[imass] = -1.;
+	  if (lklat0 > deltaLogLklDetection) svDetectionValLeft[imass] = 2*svminval - lkl[0]->GetGForLkl(deltaLogLklDetection);
+	  else svDetectionValLeft[imass] = -1.;
+	  if (lklat0 - 1. > 0.) sv1SigmaVal[imass] = 2*svminval - lkl[0]->GetGForLkl(lklat0 - 1.);
+	  else sv1SigmaVal[imass]  = -1.;
+	  if (lklat0 - 4. > 0.) sv2SigmaVal[imass] = 2*svminval - lkl[0]->GetGForLkl(lklat0 - 4.);
+	  else sv2SigmaVal[imass]  = -1.;
+	  if (lklat0 - 9. > 0.) sv3SigmaVal[imass] = 2*svminval - lkl[0]->GetGForLkl(lklat0 - 9.);
+	  else sv3SigmaVal[imass]  = -1.;
+      if (lklat0 - 16. > 0.) sv4SigmaVal[imass] = 2*svminval - lkl[0]->GetGForLkl(lklat0 - 16.);
+	  else sv4SigmaVal[imass]  = -1.;
+      if (lklat0 - 25. > 0.) sv5SigmaVal[imass] = 2*svminval - lkl[0]->GetGForLkl(lklat0 - 25.);
+	  else sv5SigmaVal[imass]  = -1.;
+      if (lklat0 - 1. > 0.) sv1SigmaValRight[imass] = lkl[0]->GetGForLkl(lklat0 - 1.);
+	  else sv1SigmaValRight[imass]  = -1.;
+	  if (lklat0 - 4. > 0.) sv2SigmaValRight[imass] = lkl[0]->GetGForLkl(lklat0 - 4.);
+	  else sv2SigmaValRight[imass]  = -1.;
+	  if (lklat0 - 9. > 0.) sv3SigmaValRight[imass] = lkl[0]->GetGForLkl(lklat0 - 9.);
+	  else sv3SigmaValRight[imass]  = -1.;
+      if (lklat0 - 16. > 0.) sv4SigmaValRight[imass] = lkl[0]->GetGForLkl(lklat0 - 16.);
+	  else sv4SigmaValRight[imass]  = -1.;
+      if (lklat0 - 25. > 0.) sv5SigmaValRight[imass] = lkl[0]->GetGForLkl(lklat0 - 25.);
+	  else sv5SigmaValRight[imass]  = -1.;
 	}
       else // use the Segue Stereo paper criterium
 	{	  
@@ -746,6 +803,7 @@ int main(int argc,char* argv[])
 	  Double_t svcutval = svminval+lkl[0]->GetGLklMinErr();
 	  svSenVal[imass]  = svcutval-svminval; // sensitivity
 	  svLimVal[imass]  = (svminval<0?  svcutval-svminval : svcutval); // convention used in the Segue paper
+	  svBestfitVal[imass]  = svminval;
 	}
       if(isDecay)
 	{
@@ -781,10 +839,17 @@ int main(int argc,char* argv[])
 	  dymmyparabola->SetXTitle((isDecay?"1/#tau_{DM} [s^{-1}]" : "<#sigma v> [cm^{3}/s]"));
 	  dymmyparabola->SetYTitle("#Delta(-2logL)");
 	  dymmyparabola->SetMinimum(0);
-	  dymmyparabola->SetMaximum(10);
+	  dymmyparabola->SetMaximum(30);
 	  dymmyparabola->DrawCopy();
 	  delete dymmyparabola;
 	  
+	  TLine *line_UL = new TLine(grLklParabola[imass]->GetX()[0],deltaLogLkl,grLklParabola[imass]->GetX()[grLklParabola[imass]->GetN()-1],deltaLogLkl);
+	  TLine *line_detection = new TLine(grLklParabola[imass]->GetX()[0],deltaLogLklDetection,grLklParabola[imass]->GetX()[grLklParabola[imass]->GetN()-1],deltaLogLklDetection);
+	  line_UL->Draw("l");
+	  line_detection->Draw("l");
+	  TLine *line_sv_UL = new TLine(svLimVal[imass],0,svLimVal[imass],10);
+	  line_sv_UL->Draw("l");
+
 	  // plot -2logLkl vs <sv>
 	  grLklParabola[imass]->Draw("l");
 	  gPad->SetGrid();
@@ -828,6 +893,7 @@ int main(int argc,char* argv[])
     {
       svLimVal[imass]*=plotScale;
       svSenVal[imass]*=plotScale;
+      svBestfitVal[imass]*=plotScale;
       if(svLimVal[imass]<minparval) minparval=svLimVal[imass];
       if(svSenVal[imass]<minparval) minparval=svSenVal[imass];
       if(svLimVal[imass]>maxparval) maxparval=svLimVal[imass];
@@ -853,7 +919,64 @@ int main(int argc,char* argv[])
   for(Int_t imass=0;imass<nmass;imass++)
     cout << svSenVal[imass] << (imass<nmass-1? "," : "");
   cout << "};" << endl;
- 
+  cout << "Double_t bestfit[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << svBestfitVal[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t limit-detection[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << svDetectionVal[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t limit-left[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << svLimValLeft[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t limit-detection-left[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << svDetectionValLeft[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t 1-sigma-contour[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << sv1SigmaVal[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t 2-sigma-contour[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << sv2SigmaVal[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t 3-sigma-contour[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << sv3SigmaVal[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t 4-sigma-contour[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << sv4SigmaVal[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t 5-sigma-contour[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << sv5SigmaVal[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+
+  cout << "Double_t 1-sigma-right-contour[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << sv1SigmaValRight[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t 2-sigma-right-contour[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << sv2SigmaValRight[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t 3-sigma-right-contour[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << sv3SigmaValRight[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t 4-sigma-right-contour[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << sv4SigmaValRight[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+  cout << "Double_t 5-sigma-right-contour[nmass]  = {";
+  for(Int_t imass=0;imass<nmass;imass++)
+    cout << sv5SigmaValRight[imass] << (imass<nmass-1? "," : "");
+  cout << "};" << endl;
+
   cout << endl;
   cout << "**********************************" << endl;
   cout << "Joint likelihood results " << endl;
@@ -861,8 +984,14 @@ int main(int argc,char* argv[])
   cout << endl;
   cout << Form("%s limit vs mass",(isDecay? "tauDM" : "<sv>")) << endl;
   cout << "*****************************************" << endl;
-  for(Int_t imass=0;imass<nmass;imass++)
-    cout << "mass = " << massval[imass] << " GeV, " << Form("%s^UL = ",(isDecay? "tauDM" : "<sv>")) << svLimVal[imass]<< Form(", %s_snstvty = ",(isDecay? "tauDM" : "<sv>")) << svSenVal[imass] << (isDecay? "s-1" : " cm^3s-1") << endl;
+  for(Int_t imass=0;imass<nmass;imass++) {
+    if (grLklParabola[imass]->Eval(0) < deltaLogLkl)
+      cout << "mass = " << massval[imass] << " GeV, " << Form("%s^UL = ",(isDecay? "tauDM" : "<sv>")) << svLimVal[imass]<< Form(", %s_snstvty = ",(isDecay? "tauDM" : "<sv>")) << svSenVal[imass] << (isDecay? "s-1" : " cm^3s-1") << ", No detection: LklAt0 = " << grLklParabola[imass]->Eval(0) << " < " << deltaLogLkl << ", best-fit value for <sv> = " << svBestfitVal[imass] << endl;
+    else if (grLklParabola[imass]->Eval(0) > deltaLogLklDetection)
+      cout << "mass = " << massval[imass] << " GeV, " << Form("%s^UL = ",(isDecay? "tauDM" : "<sv>")) << svLimVal[imass]<< Form(", %s_snstvty = ",(isDecay? "tauDM" : "<sv>")) << svSenVal[imass] << (isDecay? "s-1" : " cm^3s-1") << ", Detection!!!: LklAt0 = " << grLklParabola[imass]->Eval(0) << " > " << deltaLogLklDetection << ", best-fit value for <sv> = " << svBestfitVal[imass] << endl;
+    else
+      cout << "mass = " << massval[imass] << " GeV, " << Form("%s^UL = ",(isDecay? "tauDM" : "<sv>")) << svLimVal[imass]<< Form(", %s_snstvty = ",(isDecay? "tauDM" : "<sv>")) << svSenVal[imass] << (isDecay? "s-1" : " cm^3s-1") << ", Hint: LklAt0 = " << grLklParabola[imass]->Eval(0) << " in range [" << deltaLogLkl << "," << deltaLogLklDetection << "]" << ", best-fit value for <sv> = " << svBestfitVal[imass] << endl;
+  }
   cout << endl;
  
     
@@ -928,6 +1057,7 @@ int main(int argc,char* argv[])
   TString realPlotDir = fPlotsDir+simulationlabel+"/";
   gSystem->Exec(Form("mkdir -p %s/root",realPlotDir.Data()));
   gSystem->Exec(Form("mkdir -p %s/pdf",realPlotDir.Data()));
+  gSystem->Exec(Form("mkdir -p %s/txt",realPlotDir.Data()));
   
   TString seedTag  = (seed<1? "" : Form("_%04d",seed));
   
@@ -947,6 +1077,20 @@ int main(int argc,char* argv[])
 	}
     }
     
+  // Open output file
+  std::ofstream outfile(realPlotDir+"txt/"+label+"_"+simulationlabel+"_significance_lines"+seedTag+".txt");
+
+  if (!outfile.is_open()) {
+      std::cerr << "Failed to open output.txt for writing." << std::endl;
+  }
+  
+  for(Int_t imass=0;imass<nmass;imass++) {
+      outfile << massval[imass] << "  " << sv5SigmaVal[imass] << "  " << sv4SigmaVal[imass] << "  " << sv3SigmaVal[imass] << "  " << sv2SigmaVal[imass] << "  " << sv1SigmaVal[imass] << "  " << svBestfitVal[imass] << "  " << sv1SigmaValRight[imass] << "  " << sv2SigmaValRight[imass] << "  " << sv3SigmaValRight[imass] << "  " << sv4SigmaValRight[imass] << "  " << sv5SigmaValRight[imass] << "  " << grLklParabola[imass]->Eval(0) << endl;
+  }
+
+  outfile.close();
+  std::cout << "Data written to output.txt" << std::endl;
+
   // Clean up and close 
   /////////////////////
   delete [] lkl;
