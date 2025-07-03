@@ -847,8 +847,11 @@ int main(int argc,char* argv[])
 	  TLine *line_detection = new TLine(grLklParabola[imass]->GetX()[0],deltaLogLklDetection,grLklParabola[imass]->GetX()[grLklParabola[imass]->GetN()-1],deltaLogLklDetection);
 	  line_UL->Draw("l");
 	  line_detection->Draw("l");
-	  TLine *line_sv_UL = new TLine(svLimVal[imass],0,svLimVal[imass],10);
+	  TLine *line_sv_UL = new TLine(svLimVal[imass],0,svLimVal[imass],25);
+      TLine *line_sv_detection = new TLine(svDetectionVal[imass],0,svDetectionVal[imass],2.71);
 	  line_sv_UL->Draw("l");
+      line_sv_detection->Draw("l");
+
 
 	  // plot -2logLkl vs <sv>
 	  grLklParabola[imass]->Draw("l");

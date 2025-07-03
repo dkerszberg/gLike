@@ -385,8 +385,8 @@ int main(int argc, char* argv[])
 
       TH1I *dummylim = new TH1I("dummylim","",1,massval[0],massval[nmass-1]);
       dummylim->SetStats(0);
-      dummylim->SetMinimum((isDecay? 1e23 : 1e-28));
-      dummylim->SetMaximum((isDecay? 1e27 : 1e-20));
+      dummylim->SetMinimum((isDecay? 1e23 : 5e-25));
+      dummylim->SetMaximum((isDecay? 1e27 : 5e-21));
       dummylim->SetXTitle("m_{DM} [GeV]");
       dummylim->SetYTitle(Form("95%% %s [%s]",(isDecay? "#tau_{DM}^{LL}" : "<#sigma v>^{UL}"),(isDecay? "s" : "cm^{3}/s")));
       dummylim->DrawCopy();
@@ -424,7 +424,7 @@ int main(int argc, char* argv[])
       if(gsv0sigma)  limleg->AddEntry(gsv0sigma,"H_{0} median","l");
       if(band1sigma) limleg->AddEntry(band1sigma,"H_{0} 68% containment","f");
       if(band2sigma) limleg->AddEntry(band2sigma,"H_{0} 95% containment","f");
-      if(!isDecay)   limleg->AddEntry(relicDensity,"Thermal relic cross section","l");
+      //if(!isDecay)   limleg->AddEntry(relicDensity,"Thermal relic cross section","l");
       limleg->Draw();
 
       TLatex* txchannel = new TLatex(0.75,0.4,strchannel);
